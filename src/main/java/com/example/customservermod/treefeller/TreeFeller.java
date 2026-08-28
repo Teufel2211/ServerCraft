@@ -4,23 +4,17 @@ import com.example.customservermod.CustomServerMod;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -34,19 +28,15 @@ public class TreeFeller {
 			if (world.isClient() || player == null || player.isSneaking()) {
 				return;
 			}
-			if (!isLog(state)) {
+			if (!state.isIn(BlockTags.LOGS)) {
 				return;
 			}
 			int level = getLumberjackLevel(player.getMainHandStack());
 			if (level <= 0) {
 				return;
 			}
-			fellerTree((ServerWorld) world, player, pos, level);
+			fellerTree((ServerWorld) world, player, pos);
 		});
-	}
-
-	private static boolean isLog(BlockState state) {
-		return state.isIn(BlockTags.LOGS);
 	}
 
 	private static int getLumberjackLevel(ItemStack stack) {
@@ -61,54 +51,51 @@ public class TreeFeller {
 		return 0;
 	}
 
-	private static void fellerTree(ServerWorld world, PlayerEntity player, BlockPos origin, int level) {
-		int maxBlocks = 64 + (level - 1) * 32;
-		Set<BlockPos> toBreak = new HashSet<>();
-		Deque<BlockPos> queue = new ArrayDeque<>();
-		queue.add(origin);
-		toBreak.add(origin);
-
-		while (!queue.isEmpty() && toBreak.size() < maxBlocks) {
-			BlockPos current = queue.poll();
-			for (BlockPos neighbor : around(current)) {
-				if (toBreak.contains(neighbor) || toBreak.size() >= maxBlocks) {
-					continue;
-				}
-				BlockState state = world.getBlockState(neighbor);
-				if (isLog(state)) {
-					toBreak.add(neighbor);
-					queue.add(neighbor);
-				}
-			}
-		}
-
-		// Remove the origin from extra processing (it was already broken by vanilla)
-		toBreak.remove(origin);
+	private static void fellerTree(ServerWorld world, PlayerEntity player, BlockPos origin) {
+		// The origin log was already broken by vanilla.
+		Set<BlockPos> toBreak = collectLogs(world, origin);
 
 		ItemStack tool = player.getMainHandStack();
 		for (BlockPos pos : toBreak) {
 			if (tool.isEmpty()) {
 				break;
 			}
-			if (player.getInventory().contains(ItemStack.EMPTY) && !player.isCreative()) {
-				// fallthrough guard
-			}
 			BlockState state = world.getBlockState(pos);
 			if (state.isAir()) {
 				continue;
 			}
 			Block block = state.getBlock();
-			BlockState dropState = block.getPickStack(world, pos, state).isEmpty()
-				? state
-				: state;
-			// Drop with the player's tool so Fortune / Silk Touch apply
+			// Drop with the player's tool so Fortune / Silk Touch apply.
 			block.afterBreak(world, player, pos, state, world.getBlockEntity(pos), tool);
 			world.removeBlock(pos, false);
-			// Damage the tool for this extra block (respects Unbreaking)
+			// Damage the tool for this extra block (respects Unbreaking).
 			if (!player.isCreative()) {
 				tool.damage(1, player, (e) -> e.sendEquipmentBreakStatus(tool));
 			}
 		}
+	}
+
+	private static Set<BlockPos> collectLogs(ServerWorld world, BlockPos origin) {
+		Set<BlockPos> result = new HashSet<>();
+		Deque<BlockPos> queue = new ArrayDeque<>();
+		queue.add(origin);
+		result.add(origin);
+
+		int cap = 256;
+		while (!queue.isEmpty() && result.size() < cap) {
+			BlockPos current = queue.poll();
+			for (BlockPos neighbor : around(current)) {
+				if (result.size() >= cap || result.contains(neighbor)) {
+					continue;
+				}
+				BlockState state = world.getBlockState(neighbor);
+				if (state.isIn(BlockTags.LOGS)) {
+					result.add(neighbor);
+					queue.add(neighbor);
+				}
+			}
+		}
+		return result;
 	}
 
 	private static BlockPos[] around(BlockPos pos) {
