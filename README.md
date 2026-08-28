@@ -1,8 +1,11 @@
 # Custom Server Mod
 
-A Fabric mod for Minecraft **1.21.1** that adds a **custom crafting recipe for the Mace** (same stats as vanilla, just a different recipe).
+A Fabric mod for Minecraft **1.21.1** that adds:
 
-## Recipe
+1. A **custom crafting recipe for the Mace** (same stats as vanilla, just a different recipe).
+2. A custom **Holzfäller (Lumberjack)** enchantment for axes.
+
+## 1. Custom Mace Recipe
 
 To craft the Mace you need:
 
@@ -19,11 +22,23 @@ FlowArmorTrim| HeavyCore  | FlowArmorTrim
 DiamondBlock | BreezeRod  | DiamondBlock
 ```
 
+## 2. Holzfäller (Lumberjack) Enchantment
+
+An enchantment for **axes** (levels 1-3) that turns an axe into a tree-feller.
+
+Features:
+- Breaking a tree log breaks the **entire connected trunk** (Treecapitator style).
+- **Leaves are preserved** (only logs are removed).
+- Works with **all wood types**.
+- **Sneak** while breaking to **disable** the effect (normal single-block mining).
+- Tool **durability** is reduced for every extra log broken.
+- Compatible with **Fortune, Silk Touch, Unbreaking and Mending**.
+
 ## Requirements
 
 - **Minecraft Java Edition 1.21.1**
 - **Fabric Loader** 0.16.x
-- **Fabric API** 0.109.0
+- **Fabric API** (required, the mod uses Fabric events)
 - **Java 21**
 
 ## Installation
