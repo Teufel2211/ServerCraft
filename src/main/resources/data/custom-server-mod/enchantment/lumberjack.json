@@ -1,0 +1,22 @@
+{
+	"anvil_cost": 4,
+	"description": {
+		"translate": "enchantment.custom-server-mod.lumberjack"
+	},
+	"effects": {},
+	"exclusive_set": [],
+	"max_cost": {
+		"base": 25,
+		"per_level_above_first": 10
+	},
+	"max_level": 3,
+	"min_cost": {
+		"base": 10,
+		"per_level_above_first": 7
+	},
+	"slots": [
+		"mainhand"
+	],
+	"supported_items": "#minecraft:enchantable/axe",
+	"weight": 8
+}
