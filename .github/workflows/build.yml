@@ -35,7 +35,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="$(grep '^mod_version=' gradle.properties | cut -d= -f2)"
+          VERSION="$(grep '^version=' gradle.properties | cut -d= -f2)"
           TAG="v${VERSION}"
           gh release delete "${TAG}" --yes --cleanup-tag 2>/dev/null || true
           gh release create "${TAG}" \
