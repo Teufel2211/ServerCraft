@@ -2,20 +2,19 @@ package com.example.customservermod.treefeller;
 
 import com.example.customservermod.CustomServerMod;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Holder;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -24,58 +23,59 @@ import java.util.Set;
 
 public class TreeFeller {
 
+	private static final ResourceKey<Enchantment> LUMBERJACK_KEY =
+			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.LUMBERJACK_ID);
+
 	public static void register() {
-		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-			if (world.isClient() || player == null || player.isSneaking()) {
+		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+			if (level.isClientSide() || player == null || player.isShiftKeyDown()) {
 				return;
 			}
-			if (!state.isIn(BlockTags.LOGS)) {
+			if (!state.is(BlockTags.LOGS)) {
 				return;
 			}
-			int level = getLumberjackLevel(player.getMainHandStack());
-			if (level <= 0) {
+			int enchantLevel = getLumberjackLevel(player.getMainHandItem());
+			if (enchantLevel <= 0) {
 				return;
 			}
-			fellerTree((ServerWorld) world, player, pos);
+			fellerTree(level, player, pos);
 		});
 	}
 
 	private static int getLumberjackLevel(ItemStack stack) {
-		ItemEnchantmentsComponent ench = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
-		RegistryKey<Enchantment> key = RegistryKey.of(RegistryKeys.ENCHANTMENT, CustomServerMod.LUMBERJACK_ID);
-		for (RegistryEntry<Enchantment> holder : ench.getEnchantments()) {
-			if (holder.matchesKey(key)) {
-				return EnchantmentHelper.getLevel(holder, stack);
+		ItemEnchantments enchantments = stack.getEnchantments();
+		for (Holder<Enchantment> holder : enchantments.keySet()) {
+			if (holder.is(LUMBERJACK_KEY)) {
+				return EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
 			}
 		}
 		return 0;
 	}
 
-	private static void fellerTree(ServerWorld world, PlayerEntity player, BlockPos origin) {
+	private static void fellerTree(Level level, Player player, BlockPos origin) {
 		// The origin log was already broken by vanilla.
-		Set<BlockPos> toBreak = collectLogs(world, origin);
+		Set<BlockPos> toBreak = collectLogs(level, origin);
 
-		ItemStack tool = player.getMainHandStack();
+		ItemStack tool = player.getMainHandItem();
+		boolean creative = player.getAbilities().instabuild;
+
 		for (BlockPos pos : toBreak) {
-			if (tool.isEmpty()) {
-				break;
-			}
-			BlockState state = world.getBlockState(pos);
+			BlockState state = level.getBlockState(pos);
 			if (state.isAir()) {
 				continue;
 			}
 			Block block = state.getBlock();
 			// Drop with the player's tool so Fortune / Silk Touch apply.
-			block.afterBreak(world, player, pos, state, world.getBlockEntity(pos), tool);
-			world.removeBlock(pos, false);
-			// Damage the tool for this extra block (respects Unbreaking via damage()).
-			if (!player.isCreative()) {
-				tool.damage(1, player, null);
+			Block.dropResources(state, level, pos, level.getBlockEntity(pos), player, tool);
+			level.removeBlock(pos, false);
+			// Damage the tool for this extra block (respects Unbreaking via hurtAndBreak).
+			if (!creative && !tool.isEmpty()) {
+				tool.hurtAndBreak(1, level, player, item -> { });
 			}
 		}
 	}
 
-	private static Set<BlockPos> collectLogs(ServerWorld world, BlockPos origin) {
+	private static Set<BlockPos> collectLogs(Level level, BlockPos origin) {
 		Set<BlockPos> result = new HashSet<>();
 		Deque<BlockPos> queue = new ArrayDeque<>();
 		queue.add(origin);
@@ -88,8 +88,8 @@ public class TreeFeller {
 				if (result.size() >= cap || result.contains(neighbor)) {
 					continue;
 				}
-				BlockState state = world.getBlockState(neighbor);
-				if (state.isIn(BlockTags.LOGS)) {
+				BlockState state = level.getBlockState(neighbor);
+				if (state.is(BlockTags.LOGS)) {
 					result.add(neighbor);
 					queue.add(neighbor);
 				}
@@ -100,7 +100,7 @@ public class TreeFeller {
 
 	private static BlockPos[] around(BlockPos pos) {
 		return new BlockPos[]{
-			pos.up(), pos.down(),
+			pos.above(), pos.below(),
 			pos.north(), pos.south(), pos.east(), pos.west()
 		};
 	}

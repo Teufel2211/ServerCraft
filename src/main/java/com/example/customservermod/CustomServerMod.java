@@ -2,7 +2,7 @@ package com.example.customservermod;
 
 import com.example.customservermod.treefeller.TreeFeller;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ public class CustomServerMod implements ModInitializer {
 	public static final String MOD_ID = "custom-server-mod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final Identifier LUMBERJACK_ID = Identifier.of(MOD_ID, "lumberjack");
+	public static final ResourceLocation LUMBERJACK_ID = ResourceLocation.fromNamespaceAndPath(MOD_ID, "lumberjack");
 
 	@Override
 	public void onInitialize() {
