@@ -3,16 +3,16 @@
 	"id": "custom-server-mod",
 	"version": "${version}",
 	"name": "Custom Server Mod",
-	"description": "Adds a custom crafting recipe for the Mace and a custom Lumberjack enchantment for axes.",
+	"description": "Adds a custom crafting recipe for the Mace and a custom Lumberjack enchantment for axes. Server-side only.",
 	"authors": [
 		"Teufel2211"
 	],
 	"contact": {},
 	"license": "MIT",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
-		"main": [
-			"com.example.customservermod.CustomServerMod"
+		"server": [
+			"com.example.customservermod.CustomServerModServer"
 		]
 	},
 	"depends": {
