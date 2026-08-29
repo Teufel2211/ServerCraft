@@ -6,7 +6,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
@@ -41,11 +42,10 @@ public class TreeFeller {
 
 	private static int getLumberjackLevel(ItemStack stack) {
 		ItemEnchantmentsComponent ench = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
-		RegistryKey<net.minecraft.enchantment.Enchantment> key = RegistryKey.of(RegistryKeys.ENCHANTMENT, CustomServerMod.LUMBERJACK_ID);
-		for (EnchantmentLevelEntry entry : ench.getEnchantments()) {
-			RegistryEntry<net.minecraft.enchantment.Enchantment> holder = entry.enchantment();
+		RegistryKey<Enchantment> key = RegistryKey.of(RegistryKeys.ENCHANTMENT, CustomServerMod.LUMBERJACK_ID);
+		for (RegistryEntry<Enchantment> holder : ench.getEnchantments()) {
 			if (holder.matchesKey(key)) {
-				return entry.level();
+				return EnchantmentHelper.getLevel(holder, stack);
 			}
 		}
 		return 0;
@@ -68,9 +68,9 @@ public class TreeFeller {
 			// Drop with the player's tool so Fortune / Silk Touch apply.
 			block.afterBreak(world, player, pos, state, world.getBlockEntity(pos), tool);
 			world.removeBlock(pos, false);
-			// Damage the tool for this extra block (respects Unbreaking).
+			// Damage the tool for this extra block (respects Unbreaking via damage()).
 			if (!player.isCreative()) {
-				tool.damage(1, player, (e) -> e.sendEquipmentBreakStatus(tool));
+				tool.damage(1, player, null);
 			}
 		}
 	}
