@@ -18,20 +18,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Generate Gradle wrapper with correct version
-        run: |
-          if [ ! -f ./gradlew ]; then
-            curl -s https://raw.githubusercontent.com/gradle/gradle/v8.10.2/gradlew -o gradlew
-            curl -s https://raw.githubusercontent.com/gradle/gradle/v8.10.2/gradle/wrapper/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties 2>/dev/null || mkdir -p gradle/wrapper
-            chmod +x gradlew
-          fi
-        shell: bash
-
-      - name: Build mod with Gradle 8.10.2
+      - name: Setup Gradle 8.10.2
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
-          arguments: build
+
+      - name: Build mod
+        run: gradle build --no-daemon
 
       - name: List build outputs
         run: ls -la build/libs/
