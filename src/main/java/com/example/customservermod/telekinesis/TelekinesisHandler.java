@@ -14,6 +14,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -61,7 +63,7 @@ public class TelekinesisHandler {
 	}
 
 	private static List<ItemStack> getDrops(BlockState state, ServerLevel level, BlockPos pos,
-			net.minecraft.world.level.block.entity.BlockEntity blockEntity,
+			BlockEntity blockEntity,
 			ServerPlayer player, ItemStack tool) {
 		return Block.getDrops(state, level, pos, blockEntity, player, tool);
 	}
