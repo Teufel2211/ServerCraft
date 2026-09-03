@@ -11,7 +11,7 @@ public class CustomServerMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static final Identifier LUMBERJACK_ID = Identifier.fromNamespaceAndPath(MOD_ID, "lumberjack");
-	public static final Identifier TELEKINESIS_ID = Identifier.fromNamespaceAndPath("minecraft", "telekinesis");
+	public static final Identifier TELEKINESIS_ID = Identifier.fromNamespaceAndPath(MOD_ID, "telekinesis");
 
 	@Override
 	public void onInitialize() {
