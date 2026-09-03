@@ -11,11 +11,11 @@ public class CustomServerMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static final Identifier LUMBERJACK_ID = Identifier.fromNamespaceAndPath(MOD_ID, "lumberjack");
-	public static final Identifier TELEKINESIS_ID = Identifier.fromNamespaceAndPath(MOD_ID, "telekinesis");
+	public static final Identifier TELEKINESIS_ID = Identifier.fromNamespaceAndPath("minecraft", "telekinesis");
 
 	@Override
 	public void onInitialize() {
 		TreeFeller.register();
-		LOGGER.info("[Custom Server Mod] Initialized: Lumberjack enchantment + custom Mace recipe");
+		LOGGER.info("[Custom Server Mod] Initialized: Lumberjack + Telekinesis enchantments + custom Mace recipe");
 	}
 }
