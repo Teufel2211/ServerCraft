@@ -10,7 +10,7 @@ public class CustomServerMod implements ModInitializer {
 	public static final String MOD_ID = "custom-server-mod";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	public static final Identifier LUMBERJACK_ID = Identifier.fromNamespaceAndPath("minecraft", "lumberjack");
+	public static final Identifier LUMBERJACK_ID = Identifier.fromNamespaceAndPath(MOD_ID, "lumberjack");
 
 	@Override
 	public void onInitialize() {
