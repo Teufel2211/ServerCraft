@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "custom-server-mod:lumberjack"
+    "custom-server-mod:lumberjack",
+    "custom-server-mod:telekinesis"
   ]
 }
