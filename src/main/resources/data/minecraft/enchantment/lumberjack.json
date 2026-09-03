@@ -19,5 +19,5 @@
 		"mainhand"
 	],
 	"supported_items": "#custom-server-mod:enchantable/axes",
-	"weight": 20
+	"weight": 50
 }
