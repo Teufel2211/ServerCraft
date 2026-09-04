@@ -1,5 +1,6 @@
 package com.example.customservermod;
 
+import com.example.customservermod.excavation.ExcavationHandler;
 import com.example.customservermod.telekinesis.TelekinesisHandler;
 import com.example.customservermod.treefeller.TreeFeller;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -14,6 +15,7 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 	public void onInitializeServer() {
 		TreeFeller.register();
 		TelekinesisHandler.register();
-		LOGGER.info("[Custom Server Mod] Server initialized: Lumberjack + Telekinesis enchantments + custom Mace recipe");
+		ExcavationHandler.register();
+		LOGGER.info("[Custom Server Mod] Server initialized: Lumberjack + Telekinesis + Excavation enchantments + custom Mace recipe");
 	}
 }
