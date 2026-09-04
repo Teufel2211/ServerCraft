@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayer
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -88,17 +88,13 @@ public class CombinedEnchantmentHandler {
 	}
 
 	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool) {
-		// Collect all connected logs first
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
-
-		// Break all logs (including origin)
 		for (BlockPos logPos : logs) {
 			breakBlockAndCollect(level, player, logPos, tool, true);
 		}
 	}
 
 	private static void handleExcavation(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool) {
-		// 3x3x3 cube centered on origin
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				for (int z = -1; z <= 1; z++) {
@@ -118,7 +114,7 @@ public class CombinedEnchantmentHandler {
 		if (state.isAir()) return;
 
 		BlockEntity blockEntity = level.getBlockEntity(pos);
-		List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, player.getMainHandItem());
+		List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, tool);
 
 		if (!drops.isEmpty()) {
 			for (ItemStack drop : drops) {
@@ -131,7 +127,6 @@ public class CombinedEnchantmentHandler {
 
 		level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
 
-		ItemStack tool = player.getMainHandItem();
 		if (!player.getAbilities().instabuild && !tool.isEmpty()) {
 			tool.hurtAndBreak(1, level, player, item -> { });
 		}
