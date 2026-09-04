@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -54,11 +55,10 @@ public class CombinedEnchantmentHandler {
 				return;
 			}
 			if (hasExcavation) {
-				handleExcavation(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
+				handleExcavationDirectional(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
 				return;
 			}
 			if (hasTelekinesis) {
-				// Single block telekinesis: vanilla already spawned drops, pick them up
 				pickupItemEntitiesAt(serverLevel, serverPlayer, pos, 2.5);
 			}
 		});
@@ -72,11 +72,18 @@ public class CombinedEnchantmentHandler {
 		return 0;
 	}
 
+	private static Direction getHitDirection(Player player) {
+		Vec3 look = player.getLookAngle();
+		double ax = Math.abs(look.x);
+		double ay = Math.abs(look.y);
+		double az = Math.abs(look.z);
+		if (ay > ax && ay > az) return look.y > 0 ? Direction.UP : Direction.DOWN;
+		if (ax > az) return look.x > 0 ? Direction.EAST : Direction.WEST;
+		return look.z > 0 ? Direction.SOUTH : Direction.NORTH;
+	}
+
 	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
-		if (hasTelekinesis) {
-			// For origin, vanilla drops already spawned - collect them
-			pickupItemEntitiesAt(level, player, origin, 2.5);
-		}
+		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
 		for (BlockPos p : logs) {
@@ -88,17 +95,29 @@ public class CombinedEnchantmentHandler {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
-	private static void handleExcavation(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
-		if (hasTelekinesis) {
-			pickupItemEntitiesAt(level, player, origin, 2.5);
-		}
+	private static void handleExcavationDirectional(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
+		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
+		Direction dir = getHitDirection(player);
 		boolean creative = player.getAbilities().instabuild;
-		for (int x=-1;x<=1;x++) for (int y=-1;y<=1;y++) for (int z=-1;z<=1;z++) {
-			if (x==0&&y==0&&z==0) continue;
-			BlockPos p = origin.offset(x,y,z);
-			BlockState s = level.getBlockState(p);
-			if (s.isAir()) continue;
-			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+		// 3x3 plane perpendicular to hit face (8 additional blocks)
+		for (int a = -1; a <= 1; a++) {
+			for (int b = -1; b <= 1; b++) {
+				if (a == 0 && b == 0) continue;
+				BlockPos p;
+				if (dir == Direction.UP || dir == Direction.DOWN) {
+					// XZ plane at origin Y
+					p = origin.offset(a, 0, b);
+				} else if (dir == Direction.NORTH || dir == Direction.SOUTH) {
+					// XY plane at origin Z
+					p = origin.offset(a, b, 0);
+				} else {
+					// EAST/WEST: YZ plane at origin X
+					p = origin.offset(0, a, b);
+				}
+				BlockState s = level.getBlockState(p);
+				if (s.isAir()) continue;
+				breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+			}
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
