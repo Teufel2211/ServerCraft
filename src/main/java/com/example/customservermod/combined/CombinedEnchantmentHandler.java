@@ -63,12 +63,14 @@ public class CombinedEnchantmentHandler {
 			// Lumberjack: fell entire tree
 			if (hasLumberjack && state.is(BlockTags.LOGS)) {
 				fellTreeAndCollect(serverLevel, serverPlayer, pos, tool, hasTelekinesis);
-				return; // tree felling handles all blocks internally
+				if (hasTelekinesis) pickupOriginDrops(serverLevel, serverPlayer, pos);
+				return;
 			}
 
 			// Excavation: 3x3 area
 			if (hasExcavation) {
 				excavateAreaAndCollect(serverLevel, serverPlayer, pos, tool, hasTelekinesis);
+				if (hasTelekinesis) pickupOriginDrops(serverLevel, serverPlayer, pos);
 				return;
 			}
 
@@ -151,6 +153,16 @@ public class CombinedEnchantmentHandler {
 		}
 
 		// Also pick up any vanilla item entities already spawned at this position
+		pickupItemEntitiesAt(level, player, pos);
+	}
+
+	// Pick up item entities at a specific position (for origin block's vanilla drops)
+	private static void pickupOriginDrops(ServerLevel level, ServerPlayer player, BlockPos pos) {
+		pickupItemEntitiesAt(level, player, pos);
+	}
+
+	// Shared: pick up item entities at a position
+	private static void pickupItemEntitiesAt(ServerLevel level, ServerPlayer player, BlockPos pos) {
 		List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class,
 			new net.minecraft.world.phys.AABB(pos).inflate(1.0),
 			e -> !e.getItem().isEmpty() && e.getOwner() == null);
