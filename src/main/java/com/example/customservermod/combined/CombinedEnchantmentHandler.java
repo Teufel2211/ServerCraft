@@ -55,7 +55,7 @@ public class CombinedEnchantmentHandler {
 				return;
 			}
 			if (hasExcavation) {
-				handleExcavationC3(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
+				handleExcavationC1(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
 				return;
 			}
 			if (hasTelekinesis) {
@@ -95,36 +95,27 @@ public class CombinedEnchantmentHandler {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
-	private static void handleExcavationC3(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
+	private static void handleExcavationC1(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Direction dir = getHitDirection(player);
 		boolean creative = player.getAbilities().instabuild;
-		// 3 layers deep in hit direction: depth 0,1,2
-		for (int depth = 0; depth < 3; depth++) {
-			BlockPos base = origin.relative(dir, depth);
-			for (int a = -1; a <= 1; a++) {
-				for (int b = -1; b <= 1; b++) {
-					BlockPos p;
-					if (dir == Direction.UP || dir == Direction.DOWN) {
-						// XZ plane
-						if (depth == 0 && a == 0 && b == 0) continue; // origin handled by vanilla
-						p = base.offset(a, 0, b);
-					} else if (dir == Direction.NORTH || dir == Direction.SOUTH) {
-						// XY plane at base Z
-						if (depth == 0 && a == 0 && b == 0) continue;
-						p = base.offset(a, b, 0);
-					} else {
-						// EAST/WEST: YZ plane at base X
-						if (depth == 0 && a == 0 && b == 0) continue;
-						p = base.offset(0, a, b);
-					}
-					BlockState s = level.getBlockState(p);
-					if (s.isAir()) continue;
-					breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+		for (int a = -1; a <= 1; a++) {
+			for (int b = -1; b <= 1; b++) {
+				if (a == 0 && b == 0) continue;
+				BlockPos p;
+				if (dir == Direction.UP || dir == Direction.DOWN) {
+					p = origin.offset(a, 0, b);
+				} else if (dir == Direction.NORTH || dir == Direction.SOUTH) {
+					p = origin.offset(a, b, 0);
+				} else {
+					p = origin.offset(0, a, b);
 				}
+				BlockState s = level.getBlockState(p);
+				if (s.isAir()) continue;
+				breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
 			}
 		}
-		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 4.0);
+		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
 	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
