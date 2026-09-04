@@ -10,14 +10,18 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -35,33 +39,28 @@ public class CombinedEnchantmentHandler {
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.EXCAVATION_ID);
 
 	public static void register() {
-		PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) -> {
-			if (level.isClientSide() || player == null || player.isShiftKeyDown()) return false;
-			if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) return false;
+		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+			if (level.isClientSide() || player == null || player.isShiftKeyDown()) return;
+			if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) return;
 			ItemStack tool = player.getMainHandItem();
-			if (tool.isEmpty() || tool.getEnchantments().isEmpty()) return false;
-
+			if (tool.isEmpty() || tool.getEnchantments().isEmpty()) return;
 			boolean hasLumberjack = getEnchantmentLevel(tool, LUMBERJACK_KEY) > 0;
 			boolean hasExcavation = getEnchantmentLevel(tool, EXCAVATION_KEY) > 0;
 			boolean hasTelekinesis = getEnchantmentLevel(tool, TELEKINESIS_KEY) > 0;
-			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) return false;
+			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) return;
 
-			// Lumberjack on logs: handle entire tree, cancel vanilla
 			if (hasLumberjack && state.is(BlockTags.LOGS)) {
-				handleLumberjack(serverLevel, serverPlayer, pos, state, blockEntity, tool);
-				return true;
+				handleLumberjack(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
+				return;
 			}
-			// Excavation: 3x3x3
 			if (hasExcavation) {
-				handleExcavation(serverLevel, serverPlayer, pos, state, blockEntity, tool);
-				return true;
+				handleExcavation(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
+				return;
 			}
-			// Telekinesis single block
 			if (hasTelekinesis) {
-				handleSingleBlock(serverLevel, serverPlayer, pos, state, blockEntity, tool);
-				return true;
+				// Single block telekinesis: vanilla already spawned drops, pick them up
+				pickupItemEntitiesAt(serverLevel, serverPlayer, pos, 2.5);
 			}
-			return false;
 		});
 	}
 
@@ -73,47 +72,52 @@ public class CombinedEnchantmentHandler {
 		return 0;
 	}
 
-	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool) {
+	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
+		if (hasTelekinesis) {
+			// For origin, vanilla drops already spawned - collect them
+			pickupItemEntitiesAt(level, player, origin, 2.5);
+		}
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
 		for (BlockPos p : logs) {
-			BlockState s = p.equals(origin) ? originState : level.getBlockState(p);
+			if (p.equals(origin)) continue;
+			BlockState s = level.getBlockState(p);
 			if (s.isAir()) continue;
-			BlockEntity be = p.equals(origin) ? originBe : level.getBlockEntity(p);
-			breakAndCollect(level, player, p, s, be, tool, creative);
+			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
 		}
+		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
-	private static void handleExcavation(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool) {
+	private static void handleExcavation(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
+		if (hasTelekinesis) {
+			pickupItemEntitiesAt(level, player, origin, 2.5);
+		}
 		boolean creative = player.getAbilities().instabuild;
-		// origin first
-		breakAndCollect(level, player, origin, originState, originBe, tool, creative);
-		// 26 neighbors
-		for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
-			if (x==0 && y==0 && z==0) continue;
+		for (int x=-1;x<=1;x++) for (int y=-1;y<=1;y++) for (int z=-1;z<=1;z++) {
+			if (x==0&&y==0&&z==0) continue;
 			BlockPos p = origin.offset(x,y,z);
 			BlockState s = level.getBlockState(p);
 			if (s.isAir()) continue;
-			breakAndCollect(level, player, p, s, level.getBlockEntity(p), tool, creative);
+			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
 		}
+		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
-	private static void handleSingleBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool) {
-		breakAndCollect(level, player, pos, state, be, tool, player.getAbilities().instabuild);
-	}
-
-	private static void breakAndCollect(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean creative) {
-		if (state.isAir()) return;
+	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
 		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
-		for (ItemStack drop : drops) {
-			if (drop.isEmpty()) continue;
-			if (!player.getInventory().add(drop)) {
-				Block.popResource(level, pos, drop);
-			}
+		if (hasTelekinesis) {
+			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
+		} else {
+			for (ItemStack drop : drops) if (!drop.isEmpty()) Block.popResource(level, pos, drop);
 		}
 		level.removeBlock(pos, false);
-		if (!creative && !tool.isEmpty()) {
-			tool.hurtAndBreak(1, level, player, item -> {});
+		if (!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
+	}
+
+	private static void pickupItemEntitiesAt(ServerLevel level, ServerPlayer player, BlockPos pos, double radius) {
+		List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, new net.minecraft.world.phys.AABB(pos).inflate(radius), e->!e.getItem().isEmpty());
+		for (ItemEntity item : items) {
+			if (player.getInventory().add(item.getItem())) item.discard();
 		}
 	}
 
@@ -122,16 +126,13 @@ public class CombinedEnchantmentHandler {
 		Deque<BlockPos> queue = new ArrayDeque<>();
 		queue.add(origin);
 		result.add(origin);
-		int cap = 256;
-		while (!queue.isEmpty() && result.size() < cap) {
-			BlockPos cur = queue.poll();
-			for (Direction d : Direction.values()) {
-				BlockPos n = cur.relative(d);
-				if (result.contains(n) || result.size() >= cap) continue;
-				if (level.getBlockState(n).is(BlockTags.LOGS)) {
-					result.add(n);
-					queue.add(n);
-				}
+		int cap=256;
+		while(!queue.isEmpty() && result.size()<cap){
+			BlockPos cur=queue.poll();
+			for(Direction d:Direction.values()){
+				BlockPos n=cur.relative(d);
+				if(result.contains(n)||result.size()>=cap) continue;
+				if(level.getBlockState(n).is(BlockTags.LOGS)){result.add(n);queue.add(n);}
 			}
 		}
 		return result;
