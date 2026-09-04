@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
