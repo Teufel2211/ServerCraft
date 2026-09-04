@@ -82,6 +82,15 @@ public class CombinedEnchantmentHandler {
 		return look.z > 0 ? Direction.SOUTH : Direction.NORTH;
 	}
 
+	private static boolean isUnbreakable(ServerLevel level, BlockPos pos, BlockState state) {
+		if (state.isAir()) return true;
+		if (state.is(Blocks.BEDROCK) || state.is(Blocks.BARRIER) || state.is(Blocks.END_PORTAL) || state.is(Blocks.END_PORTAL_FRAME) || state.is(Blocks.END_GATEWAY) || state.is(Blocks.COMMAND_BLOCK) || state.is(Blocks.CHAIN_COMMAND_BLOCK) || state.is(Blocks.REPEATING_COMMAND_BLOCK) || state.is(Blocks.STRUCTURE_BLOCK) || state.is(Blocks.JIGSAW) || state.is(Blocks.LIGHT)) return true;
+		try {
+			if (state.getDestroySpeed(level, pos) < 0) return true;
+		} catch (Exception ignored) {}
+		return false;
+	}
+
 	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
@@ -89,7 +98,7 @@ public class CombinedEnchantmentHandler {
 		for (BlockPos p : logs) {
 			if (p.equals(origin)) continue;
 			BlockState s = level.getBlockState(p);
-			if (s.isAir()) continue;
+			if (isUnbreakable(level, p, s)) continue;
 			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
@@ -111,7 +120,7 @@ public class CombinedEnchantmentHandler {
 					p = origin.offset(0, a, b);
 				}
 				BlockState s = level.getBlockState(p);
-				if (s.isAir()) continue;
+				if (isUnbreakable(level, p, s)) continue;
 				breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
 			}
 		}
@@ -119,6 +128,7 @@ public class CombinedEnchantmentHandler {
 	}
 
 	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
+		if (isUnbreakable(level, pos, state)) return;
 		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
 		if (hasTelekinesis) {
 			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
@@ -147,7 +157,9 @@ public class CombinedEnchantmentHandler {
 			for(Direction d:Direction.values()){
 				BlockPos n=cur.relative(d);
 				if(result.contains(n)||result.size()>=cap) continue;
-				if(level.getBlockState(n).is(BlockTags.LOGS)){result.add(n);queue.add(n);}
+				BlockState ns = level.getBlockState(n);
+				if (isUnbreakable(level, n, ns)) continue;
+				if(ns.is(BlockTags.LOGS)){result.add(n);queue.add(n);}
 			}
 		}
 		return result;
