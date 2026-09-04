@@ -21,8 +21,10 @@ jobs:
         run: |
           V="$(grep '^version=' gradle.properties | cut -d= -f2)"
           IFS='.' read -r MAJ MIN PATCH <<< "$V"
-          NPATCH=$((PATCH + 1))
-          NEWV="${MAJ}.${MIN}.${NPATCH}"
+          PATCH=$((PATCH + 1))
+          if [ "$PATCH" -gt 10 ]; then PATCH=0; MIN=$((MIN + 1)); fi
+          if [ "$MIN" -gt 10 ]; then MIN=0; MAJ=$((MAJ + 1)); fi
+          NEWV="${MAJ}.${MIN}.${PATCH}"
           sed -i "s/^version=.*/version=${NEWV}/" gradle.properties
           echo "NEW_VERSION=${NEWV}" >> "$GITHUB_ENV"
           git config user.name "github-actions[bot]"
