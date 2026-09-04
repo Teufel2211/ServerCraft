@@ -63,7 +63,7 @@ public class ExcavationHandler {
 				if (x == 0 && z == 0) continue; // origin already broken
 				BlockPos p = origin.offset(x, 0, z);
 				BlockState state = level.getBlockState(p);
-				if (!state.isAir() && canHarvest(state, tool)) {
+				if (!state.isAir()) {
 					toBreak.add(p);
 				}
 			}
@@ -87,10 +87,5 @@ public class ExcavationHandler {
 				tool.hurtAndBreak(1, level, player, item -> { });
 			}
 		}
-	}
-
-	private static boolean canHarvest(BlockState state, ItemStack tool) {
-		if (tool.isEmpty()) return false;
-		return state.getBlock().isCorrectToolForDrops(state);
 	}
 }
