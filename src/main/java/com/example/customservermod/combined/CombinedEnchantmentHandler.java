@@ -50,6 +50,11 @@ public class CombinedEnchantmentHandler {
 				return false;
 			}
 
+			// SAFETY: Tool has NO enchantments at all → let vanilla handle immediately
+			if (tool.getEnchantments().isEmpty()) {
+				return false;
+			}
+
 			boolean hasLumberjack = getEnchantmentLevel(tool, LUMBERJACK_KEY) > 0;
 			boolean hasExcavation = getEnchantmentLevel(tool, EXCAVATION_KEY) > 0;
 			boolean hasTelekinesis = getEnchantmentLevel(tool, TELEKINESIS_KEY) > 0;
@@ -98,8 +103,8 @@ public class CombinedEnchantmentHandler {
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				for (int z = -1; z <= 1; z++) {
-					BlockPos pos = origin.offset(x, y, z);
-					breakBlockAndCollect(level, player, pos, tool, true);
+					BlockPos p = origin.offset(x, y, z);
+					breakBlockAndCollect(level, player, p, tool, true);
 				}
 			}
 		}
