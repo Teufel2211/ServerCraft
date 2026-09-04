@@ -43,7 +43,7 @@ jobs:
           gradle-version: '9.5.0'
 
       - name: Build mod
-        run: gradle build --no-daemon
+        run: gradle build --no-daemon --scan
 
       - name: List build outputs
         run: ls -la build/libs/
