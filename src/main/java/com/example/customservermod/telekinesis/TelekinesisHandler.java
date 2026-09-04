@@ -26,29 +26,36 @@ public class TelekinesisHandler {
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
 
 	public static void register() {
-		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
+		PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) -> {
 			if (level.isClientSide() || player == null) {
-				return;
+				return false; // continue vanilla
 			}
 			if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) {
-				return;
+				return false;
 			}
 			ItemStack tool = player.getMainHandItem();
-			if (tool.isEmpty()) {
-				return;
+			if (tool.isEmpty() || !hasTelekinesis(tool)) {
+				return false;
 			}
-			if (!hasTelekinesis(tool)) {
-				return;
-			}
-			List<ItemStack> drops = getDrops(state, serverLevel, pos, blockEntity, serverPlayer, tool);
+			// Get drops that would be generated
+			List<ItemStack> drops = Block.getDrops(state, serverLevel, pos, blockEntity, serverPlayer, tool);
+			// Add to player inventory
 			for (ItemStack drop : drops) {
-				if (drop.isEmpty()) {
-					continue;
-				}
+				if (drop.isEmpty()) continue;
 				if (!serverPlayer.getInventory().add(drop)) {
-					drop.setCount(0);
+					// Inventory full - drop in world anyway
+					return false; // let vanilla handle it
 				}
 			}
+			// Damage tool
+			boolean creative = serverPlayer.getAbilities().instabuild;
+			if (!creative && !tool.isEmpty()) {
+				tool.hurtAndBreak(1, serverLevel, serverPlayer, item -> { });
+			}
+			// Remove block without vanilla drops
+			level.removeBlock(pos, false);
+			// Return true to cancel vanilla drop spawning
+			return true;
 		});
 	}
 
@@ -60,11 +67,5 @@ public class TelekinesisHandler {
 			}
 		}
 		return false;
-	}
-
-	private static List<ItemStack> getDrops(BlockState state, ServerLevel level, BlockPos pos,
-			BlockEntity blockEntity,
-			ServerPlayer player, ItemStack tool) {
-		return Block.getDrops(state, level, pos, blockEntity, player, tool);
 	}
 }
