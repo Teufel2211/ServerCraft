@@ -1,6 +1,8 @@
 package com.example.customservermod.combined;
 
 import com.example.customservermod.CustomServerMod;
+import com.example.customservermod.excavation.ExcavationHandler;
+import com.example.customservermod.treefeller.TreeFeller;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -32,7 +34,9 @@ public class CombinedEnchantmentHandler {
 	private static final ResourceKey<Enchantment> LUMBERJACK_KEY =
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.LUMBERJACK_ID);
 	private static final ResourceKey<Enchantment> TELEKINESIS_KEY =
-			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_KEY);
+			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
+	private static final ResourceKey<Enchantment> EXCAVATION_KEY =
+			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.EXCAVATION_ID);
 
 	public static void register() {
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
@@ -48,19 +52,26 @@ public class CombinedEnchantmentHandler {
 			}
 
 			boolean hasLumberjack = getEnchantmentLevel(tool, LUMBERJACK_KEY) > 0;
+			boolean hasExcavation = getEnchantmentLevel(tool, EXCAVATION_KEY) > 0;
 			boolean hasTelekinesis = getEnchantmentLevel(tool, TELEKINESIS_KEY) > 0;
 
-			if (!hasLumberjack && !hasTelekinesis) {
+			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) {
 				return;
 			}
 
-			// If Lumberjack: fell tree, collect drops manually
+			// Lumberjack: fell entire tree
 			if (hasLumberjack && state.is(BlockTags.LOGS)) {
-				fellTreeAndCollect(serverLevel, serverPlayer, pos, tool);
-				return; // tree felling handles all blocks
+				fellTreeAndCollect(serverLevel, serverPlayer, pos, tool, hasTelekinesis);
+				return; // tree felling handles all blocks internally
 			}
 
-			// Only Telekinesis (no Lumberjack, or not a log): auto-pickup drops
+			// Excavation: 3x3 area
+			if (hasExcavation) {
+				excavateAreaAndCollect(serverLevel, serverPlayer, pos, tool, hasTelekinesis);
+				return;
+			}
+
+			// Only Telekinesis: auto-pickup drops
 			if (hasTelekinesis) {
 				pickupDrops(serverLevel, serverPlayer, pos, state, blockEntity, tool);
 			}
@@ -77,8 +88,8 @@ public class CombinedEnchantmentHandler {
 		return 0;
 	}
 
-	// Lumberjack: fell tree + manually collect drops (no vanilla entities)
-	private static void fellTreeAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool) {
+	// Lumberjack: fell tree + collect drops
+	private static void fellTreeAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
 		Set<BlockPos> toBreak = collectLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
 
@@ -87,24 +98,49 @@ public class CombinedEnchantmentHandler {
 			if (state.isAir()) continue;
 
 			BlockEntity blockEntity = level.getBlockEntity(pos);
-			List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, tool);
-			for (ItemStack drop : drops) {
-				if (drop.isEmpty()) continue;
-				if (!player.getInventory().add(drop)) {
-					drop.setCount(0);
-				}
-			}
+			breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, hasTelekinesis, creative);
+		}
+	}
 
-			level.removeBlock(pos, false);
-			if (!creative && !tool.isEmpty()) {
-				tool.hurtAndBreak(1, level, player, item -> { });
+	// Excavation: 3x3 area
+	private static void excavateAreaAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
+		boolean creative = player.getAbilities().instabuild;
+
+		for (int x = -1; x <= 1; x++) {
+			for (int z = -1; z <= 1; z++) {
+				if (x == 0 && z == 0) continue; // origin already broken by vanilla
+				BlockPos pos = origin.offset(x, 0, z);
+				BlockState state = level.getBlockState(pos);
+				if (state.isAir()) continue;
+
+				BlockEntity blockEntity = level.getBlockEntity(pos);
+				breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, hasTelekinesis, creative);
 			}
 		}
 	}
 
-	// Telekinesis only: pickup drops from vanilla entities + manual drops for non-vanilla
+	// Common: break block + collect drops (with Telekinesis if enabled)
+	private static void breakBlockAndCollectDrops(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity blockEntity, ItemStack tool, boolean hasTelekinesis, boolean creative) {
+		List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, tool);
+		for (ItemStack drop : drops) {
+			if (drop.isEmpty()) continue;
+			if (hasTelekinesis) {
+				if (!player.getInventory().add(drop)) {
+					drop.setCount(0);
+				}
+			} else {
+				Block.popResource(level, pos, drop);
+			}
+		}
+
+		level.removeBlock(pos, false);
+		if (!creative && !tool.isEmpty()) {
+			tool.hurtAndBreak(1, level, player, item -> { });
+		}
+	}
+
+	// Only Telekinesis (no other custom enchantment): auto-pickup drops
 	private static void pickupDrops(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity blockEntity, ItemStack tool) {
-		// 1. Manually calculate and add drops to inventory (bypasses vanilla entities)
 		List<ItemStack> drops = Block.getDrops(state, level, pos, blockEntity, player, tool);
 		for (ItemStack drop : drops) {
 			if (drop.isEmpty()) continue;
@@ -113,8 +149,7 @@ public class CombinedEnchantmentHandler {
 			}
 		}
 
-		// 2. Also pick up any vanilla item entities that were already spawned at this position
-		// (vanilla spawns them before AFTER event fires)
+		// Also pick up any vanilla item entities already spawned at this position
 		List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class,
 			new net.minecraft.world.phys.AABB(pos).inflate(1.0),
 			e -> !e.getItem().isEmpty() && e.getOwner() == null);
