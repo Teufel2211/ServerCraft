@@ -88,24 +88,20 @@ public class CombinedEnchantmentHandler {
 
 	// Lumberjack: fell tree + collect drops
 	private static void fellTreeAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
-		Set<BlockPos> toBreak = collectLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
 
-		// Break origin first (vanilla already broke it, but we need to handle drops)
-		BlockEntity originEntity = level.getBlockEntity(origin);
+		// Origin block
 		BlockState originState = level.getBlockState(origin);
 		if (!originState.isAir()) {
-			breakBlockAndCollectDrops(level, player, origin, originState, originEntity, tool, hasTelekinesis, creative);
+			breakBlockAndCollectDrops(level, player, origin, originState, level.getBlockEntity(origin), tool, hasTelekinesis, creative);
 		}
 
-		// Then fell the rest of the tree
+		// Rest of tree
 		Set<BlockPos> toBreak = collectLogs(level, origin);
 		for (BlockPos logPos : toBreak) {
-			if (logPos.equals(origin)) continue; // already handled
+			if (logPos.equals(origin)) continue;
 			BlockState state = level.getBlockState(logPos);
 			if (state.isAir()) continue;
-
-			BlockEntity blockEntity = level.getBlockEntity(logPos);
 			breakBlockAndCollectDrops(level, player, logPos, state, level.getBlockEntity(logPos), tool, hasTelekinesis, creative);
 		}
 	}
@@ -114,14 +110,13 @@ public class CombinedEnchantmentHandler {
 	private static void excavateAreaAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
 		boolean creative = player.getAbilities().instabuild;
 
-		// Handle origin block (vanilla already broke it)
-		BlockEntity originEntity = level.getBlockEntity(origin);
+		// Origin block
 		BlockState originState = level.getBlockState(origin);
 		if (!originState.isAir()) {
-			breakBlockAndCollectDrops(level, player, origin, originState, originEntity, tool, hasTelekinesis, creative);
+			breakBlockAndCollectDrops(level, player, origin, originState, level.getBlockEntity(origin), tool, hasTelekinesis, creative);
 		}
 
-		// 3x3x3 around origin
+		// 3x3x3 cube around origin
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
 				for (int z = -1; z <= 1; z++) {
@@ -130,7 +125,6 @@ public class CombinedEnchantmentHandler {
 					BlockState state = level.getBlockState(pos);
 					if (state.isAir()) continue;
 
-					BlockEntity blockEntity = level.getBlockEntity(pos);
 					breakBlockAndCollectDrops(level, player, pos, state, level.getBlockEntity(pos), tool, hasTelekinesis, creative);
 				}
 			}
@@ -192,71 +186,9 @@ public class CombinedEnchantmentHandler {
 		}
 	}
 
-	private static int getEnchantmentLevel(ItemStack stack, ResourceKey<Enchantment> key) {
-		ItemEnchantments enchantments = stack.getEnchantments();
-		for (Holder<Enchantment> holder : enchantments.keySet()) {
-			if (holder.is(key)) {
-				return EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
-			}
-		}
-		return 0;
-	}
-
-	// Lumberjack: fell tree + collect drops
-	private static void fellTreeAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
-		boolean creative = player.getAbilities().instabuild;
-
-		// Origin block
-		BlockEntity originEntity = level.getBlockEntity(origin);
-		BlockState originState = level.getBlockState(origin);
-		if (!originState.isAir()) {
-			breakBlockAndCollectDrops(level, player, origin, originState, level.getBlockEntity(origin), tool, hasTelekinesis, creative);
-		}
-
-		// Rest of tree
-		Set<BlockPos> toBreak = collectLogs(level, origin);
-		for (BlockPos logPos : toBreak) {
-			if (logPos.equals(origin)) continue;
-			BlockState state = level.getBlockState(logPos);
-			if (state.isAir()) continue;
-			breakBlockAndCollectDrops(level, player, logPos, state, level.getBlockEntity(logPos), tool, hasTelekinesis, creative);
-		}
-	}
-
-	// Excavation: 3x3x3 cube
-	private static void excavateAreaAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
-		boolean creative = player.getAbilities().instabuild;
-
-		// Origin block
-		BlockEntity originEntity = level.getBlockEntity(origin);
-		BlockState originState = level.getBlockState(origin);
-		if (!originState.isAir()) {
-			breakBlockAndCollectDrops(level, player, origin, originState, level.getBlockEntity(origin), tool, hasTelekinesis, creative);
-		}
-
-		// 3x3x3 cube around origin
-		for (int x = -1; x <= 1; x++) {
-			for (int y = -1; y <= 1; y++) {
-				for (int z = -1; z <= 1; z++) {
-					if (x == 0 && y == 0 && z == 0) continue;
-					BlockPos pos = origin.offset(x, y, z);
-					BlockState state = level.getBlockState(pos);
-					if (state.isAir()) continue;
-
-					breakBlockAndCollectDrops(level, player, pos, state, level.getBlockEntity(pos), tool, hasTelekinesis, creative);
-				}
-			}
-		}
-	}
-
-	private static int getEnchantmentLevel(ItemStack stack, ResourceKey<Enchantment> key) {
-		ItemEnchantments enchantments = stack.getEnchantments();
-		for (Holder<Enchantment> holder : enchantments.keySet()) {
-			if (holder.is(key)) {
-				return EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
-			}
-		}
-		return 0;
+	// Only Telekinesis on a single block
+	private static void breakOriginAndCollect(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity blockEntity, ItemStack tool) {
+		breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, true, player.getAbilities().instabuild);
 	}
 
 	private static Set<BlockPos> collectLogs(Level level, BlockPos origin) {
