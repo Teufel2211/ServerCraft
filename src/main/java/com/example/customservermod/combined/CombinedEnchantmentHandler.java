@@ -67,7 +67,7 @@ public class CombinedEnchantmentHandler {
 				return;
 			}
 
-			// Excavation: 3x3 area
+			// Excavation: 3x3x3 cube
 			if (hasExcavation) {
 				excavateAreaAndCollect(serverLevel, serverPlayer, pos, tool, hasTelekinesis);
 				if (hasTelekinesis) pickupOriginDrops(serverLevel, serverPlayer, pos);
@@ -105,19 +105,21 @@ public class CombinedEnchantmentHandler {
 		}
 	}
 
-	// Excavation: 3x3 area
+	// Excavation: 3x3x3 cube (27 blocks total, origin already broken by vanilla)
 	private static void excavateAreaAndCollect(ServerLevel level, ServerPlayer player, BlockPos origin, ItemStack tool, boolean hasTelekinesis) {
 		boolean creative = player.getAbilities().instabuild;
 
 		for (int x = -1; x <= 1; x++) {
-			for (int z = -1; z <= 1; z++) {
-				if (x == 0 && z == 0) continue; // origin already broken by vanilla
-				BlockPos pos = origin.offset(x, 0, z);
-				BlockState state = level.getBlockState(pos);
-				if (state.isAir()) continue;
+			for (int y = -1; y <= 1; y++) {
+				for (int z = -1; z <= 1; z++) {
+					if (x == 0 && y == 0 && z == 0) continue; // origin already broken by vanilla
+					BlockPos pos = origin.offset(x, y, z);
+					BlockState state = level.getBlockState(pos);
+					if (state.isAir()) continue;
 
-				BlockEntity blockEntity = level.getBlockEntity(pos);
-				breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, hasTelekinesis, creative);
+					BlockEntity blockEntity = level.getBlockEntity(pos);
+					breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, hasTelekinesis, creative);
+				}
 			}
 		}
 	}
