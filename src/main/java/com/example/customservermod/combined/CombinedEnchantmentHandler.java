@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
+import java.util.Deque
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -184,11 +184,6 @@ public class CombinedEnchantmentHandler {
 			}
 			item.discard();
 		}
-	}
-
-	// Only Telekinesis on a single block
-	private static void breakOriginAndCollect(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity blockEntity, ItemStack tool) {
-		breakBlockAndCollectDrops(level, player, pos, state, blockEntity, tool, true, player.getAbilities().instabuild);
 	}
 
 	private static Set<BlockPos> collectLogs(Level level, BlockPos origin) {
