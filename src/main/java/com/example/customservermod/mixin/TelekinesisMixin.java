@@ -27,7 +27,7 @@ public class TelekinesisMixin {
 	@Inject(method = "dropResources(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/BlockEntity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/item/ItemStack;)V", at = @At("HEAD"), cancellable = true)
 	private static void onDropResources(BlockState state, Level level, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack tool, CallbackInfo ci) {
 		if (!(entity instanceof ServerPlayer player)) return;
-		if (level.isClientSide) return;
+		if (level.isClientSide()) return;
 		if (!(level instanceof ServerLevel serverLevel)) return;
 
 		ItemStack mainHand = player.getMainHandItem();
