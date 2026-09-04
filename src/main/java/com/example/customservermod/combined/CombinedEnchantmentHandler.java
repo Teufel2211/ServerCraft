@@ -89,12 +89,8 @@ public class CombinedEnchantmentHandler {
 	}
 
 	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
-		// Origin drops: if telekinesis, suppress vanilla entity and add manually; else vanilla already did it
 		if (hasTelekinesis) {
-			// Vanilla already spawned origin drops as entities -> collect and discard them, then add manually to avoid missing
-			// First remove vanilla entities at origin
-			discardEntitiesAt(level, origin);
-			// Then add origin drops manually to inventory
+			discardEntitiesAt(level, origin, 2.5);
 			List<ItemStack> originDrops = Block.getDrops(originState, level, origin, originBe, player, tool);
 			for (ItemStack drop : originDrops) {
 				if (drop.isEmpty()) continue;
@@ -102,11 +98,7 @@ public class CombinedEnchantmentHandler {
 					Block.popResource(level, origin, drop);
 				}
 			}
-		} else {
-			// No telekinesis: origin vanilla drops stay, just ensure no duplicate
 		}
-
-		// Fell rest of tree (additional logs)
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
 		for (BlockPos logPos : logs) {
@@ -116,17 +108,14 @@ public class CombinedEnchantmentHandler {
 			BlockEntity be = level.getBlockEntity(logPos);
 			breakAdditionalBlock(level, player, logPos, state, be, tool, hasTelekinesis, creative);
 		}
-
-		// Final sweep: collect any remaining entities at origin (covers Fortune etc. if we missed)
 		if (hasTelekinesis) {
-			pickupItemEntitiesAt(level, player, origin, 2.0);
+			pickupItemEntitiesAt(level, player, origin, 3.0);
 		}
 	}
 
 	private static void handleExcavation(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
-		// Origin: same as lumberjack - replace vanilla drops with inventory if telekinesis
 		if (hasTelekinesis) {
-			discardEntitiesAt(level, origin);
+			discardEntitiesAt(level, origin, 2.5);
 			List<ItemStack> originDrops = Block.getDrops(originState, level, origin, originBe, player, tool);
 			for (ItemStack drop : originDrops) {
 				if (drop.isEmpty()) continue;
@@ -135,7 +124,6 @@ public class CombinedEnchantmentHandler {
 				}
 			}
 		}
-
 		boolean creative = player.getAbilities().instabuild;
 		for (int x = -1; x <= 1; x++) {
 			for (int y = -1; y <= 1; y++) {
@@ -150,12 +138,12 @@ public class CombinedEnchantmentHandler {
 			}
 		}
 		if (hasTelekinesis) {
-			pickupItemEntitiesAt(level, player, origin, 2.0);
+			pickupItemEntitiesAt(level, player, origin, 3.0);
 		}
 	}
 
 	private static void handleTelekinesisPickup(ServerLevel level, ServerPlayer player, BlockPos pos) {
-		pickupItemEntitiesAt(level, player, pos, 2.0);
+		pickupItemEntitiesAt(level, player, pos, 2.5);
 	}
 
 	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity blockEntity, ItemStack tool, boolean hasTelekinesis, boolean creative) {
@@ -179,9 +167,9 @@ public class CombinedEnchantmentHandler {
 		}
 	}
 
-	private static void discardEntitiesAt(ServerLevel level, BlockPos pos) {
+	private static void discardEntitiesAt(ServerLevel level, BlockPos pos, double radius) {
 		List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class,
-				new net.minecraft.world.phys.AABB(pos).inflate(1.0),
+				new net.minecraft.world.phys.AABB(pos).inflate(radius),
 				e -> !e.getItem().isEmpty());
 		for (ItemEntity item : items) {
 			item.discard();
