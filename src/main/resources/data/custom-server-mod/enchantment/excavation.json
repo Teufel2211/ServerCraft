@@ -12,7 +12,7 @@
 		"base": 50,
 		"per_level_above_first": 20
 	},
-	"max_level": 3,
+	"max_level": 1,
 	"min_cost": {
 		"base": 20,
 		"per_level_above_first": 10
@@ -20,6 +20,6 @@
 	"slots": [
 		"mainhand"
 	],
-	"supported_items": "#custom-server-mod:enchantable/mining_tools",
+	"supported_items": "#custom-server-mod:enchantable/pickaxes",
 	"weight": 1
 }
