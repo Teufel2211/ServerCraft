@@ -50,8 +50,7 @@ public class TelekinesisMixin {
 		List<ItemStack> drops = Block.getDrops(state, serverLevel, pos, blockEntity, player, checkStack);
 		for (ItemStack drop : drops) {
 			if (drop.isEmpty()) continue;
-			ItemStack out = drop;
-			if (hasSmelt) out = trySmelt(serverLevel, drop);
+			ItemStack out = hasSmelt ? trySmelt(serverLevel, drop) : drop;
 			if (hasTele) {
 				if (!player.getInventory().add(out)) {
 					Block.popResource(level, pos, out);
@@ -65,11 +64,10 @@ public class TelekinesisMixin {
 
 	private static ItemStack trySmelt(ServerLevel level, ItemStack stack) {
 		try {
-			var recipeManager = level.getRecipeManager();
 			var input = new SingleRecipeInput(stack);
-			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = recipeManager.getRecipeFor(RecipeType.SMELTING, input, level);
+			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = level.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, level);
 			if (opt.isPresent()) {
-				ItemStack result = opt.get().value().assemble(input, level.registryAccess());
+				ItemStack result = opt.get().value().assemble(input);
 				result.setCount(stack.getCount());
 				return result;
 			}
