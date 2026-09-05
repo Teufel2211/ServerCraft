@@ -54,10 +54,8 @@ public class CombinedEnchantmentHandler {
 			boolean hasExcavation = getEnchantmentLevel(tool, EXCAVATION_KEY) > 0;
 			boolean hasTelekinesis = getEnchantmentLevel(tool, TELEKINESIS_KEY) > 0;
 			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) {
-				// Still check auto smelting for single block? handled via mixin, but keep for consistency
 				boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
 				if (!hasSmelt) return;
-				// Auto smelting single block without telekinesis: let mixin handle, but also fallback pickup
 				return;
 			}
 
@@ -105,9 +103,9 @@ public class CombinedEnchantmentHandler {
 	private static ItemStack trySmelt(ServerLevel level, ItemStack stack) {
 		try {
 			var input = new SingleRecipeInput(stack);
-			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, input, level);
+			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = level.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, level);
 			if (opt.isPresent()) {
-				ItemStack result = opt.get().value().assemble(input, level.registryAccess());
+				ItemStack result = opt.get().value().assemble(input);
 				result.setCount(stack.getCount());
 				return result;
 			}
