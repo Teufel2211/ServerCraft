@@ -9,6 +9,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -20,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(Block.class)
 public class TelekinesisMixin {
@@ -34,20 +37,43 @@ public class TelekinesisMixin {
 		ItemStack checkStack = tool.isEmpty() ? mainHand : tool;
 		if (checkStack.isEmpty()) return;
 
-		ResourceKey<Enchantment> key = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
+		ResourceKey<Enchantment> teleKey = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
+		ResourceKey<Enchantment> smeltKey = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.AUTO_SMELTING_ID);
 		boolean hasTele = false;
+		boolean hasSmelt = false;
 		for (Holder<Enchantment> h : checkStack.getEnchantments().keySet()) {
-			if (h.is(key)) { hasTele = true; break; }
+			if (h.is(teleKey)) hasTele = true;
+			if (h.is(smeltKey)) hasSmelt = true;
 		}
-		if (!hasTele) return;
+		if (!hasTele && !hasSmelt) return;
 
 		List<ItemStack> drops = Block.getDrops(state, serverLevel, pos, blockEntity, player, checkStack);
 		for (ItemStack drop : drops) {
 			if (drop.isEmpty()) continue;
-			if (!player.getInventory().add(drop)) {
-				Block.popResource(level, pos, drop);
+			ItemStack out = drop;
+			if (hasSmelt) out = trySmelt(serverLevel, drop);
+			if (hasTele) {
+				if (!player.getInventory().add(out)) {
+					Block.popResource(level, pos, out);
+				}
+			} else {
+				Block.popResource(level, pos, out);
 			}
 		}
 		ci.cancel();
+	}
+
+	private static ItemStack trySmelt(ServerLevel level, ItemStack stack) {
+		try {
+			var recipeManager = level.getRecipeManager();
+			var input = new SingleRecipeInput(stack);
+			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = recipeManager.getRecipeFor(RecipeType.SMELTING, input, level);
+			if (opt.isPresent()) {
+				ItemStack result = opt.get().value().assemble(input, level.registryAccess());
+				result.setCount(stack.getCount());
+				return result;
+			}
+		} catch (Exception ignored) {}
+		return stack;
 	}
 }
