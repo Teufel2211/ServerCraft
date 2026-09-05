@@ -99,7 +99,7 @@ public class CombinedEnchantmentHandler {
 			if (p.equals(origin)) continue;
 			BlockState s = level.getBlockState(p);
 			if (isUnbreakable(level, p, s)) continue;
-			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative, false);
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
@@ -107,7 +107,7 @@ public class CombinedEnchantmentHandler {
 	private static void handleExcavationC1(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Direction dir = getHitDirection(player);
-		boolean creative = player.getAbilities().instabuild;
+		// No extra durability for the 8 additional blocks (only origin costs durability via vanilla)
 		for (int a = -1; a <= 1; a++) {
 			for (int b = -1; b <= 1; b++) {
 				if (a == 0 && b == 0) continue;
@@ -121,14 +121,13 @@ public class CombinedEnchantmentHandler {
 				}
 				BlockState s = level.getBlockState(p);
 				if (isUnbreakable(level, p, s)) continue;
-				breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+				breakAdditionalBlockNoDurability(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis);
 			}
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
 	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
-		if (isUnbreakable(level, pos, state)) return;
 		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
 		if (hasTelekinesis) {
 			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
@@ -137,6 +136,17 @@ public class CombinedEnchantmentHandler {
 		}
 		level.removeBlock(pos, false);
 		if (!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
+	}
+
+	private static void breakAdditionalBlockNoDurability(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis) {
+		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
+		if (hasTelekinesis) {
+			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
+		} else {
+			for (ItemStack drop : drops) if (!drop.isEmpty()) Block.popResource(level, pos, drop);
+		}
+		level.removeBlock(pos, false);
+		// No durability cost for excavation 3x3 additional blocks (only origin costs via vanilla)
 	}
 
 	private static void pickupItemEntitiesAt(ServerLevel level, ServerPlayer player, BlockPos pos, double radius) {
