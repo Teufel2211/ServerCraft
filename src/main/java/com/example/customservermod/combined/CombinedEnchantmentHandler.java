@@ -13,6 +13,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -28,6 +30,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class CombinedEnchantmentHandler {
@@ -38,6 +41,8 @@ public class CombinedEnchantmentHandler {
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
 	private static final ResourceKey<Enchantment> EXCAVATION_KEY =
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.EXCAVATION_ID);
+	private static final ResourceKey<Enchantment> AUTO_SMELTING_KEY =
+			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.AUTO_SMELTING_ID);
 
 	public static void register() {
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
@@ -48,7 +53,13 @@ public class CombinedEnchantmentHandler {
 			boolean hasLumberjack = getEnchantmentLevel(tool, LUMBERJACK_KEY) > 0;
 			boolean hasExcavation = getEnchantmentLevel(tool, EXCAVATION_KEY) > 0;
 			boolean hasTelekinesis = getEnchantmentLevel(tool, TELEKINESIS_KEY) > 0;
-			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) return;
+			if (!hasLumberjack && !hasExcavation && !hasTelekinesis) {
+				// Still check auto smelting for single block? handled via mixin, but keep for consistency
+				boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
+				if (!hasSmelt) return;
+				// Auto smelting single block without telekinesis: let mixin handle, but also fallback pickup
+				return;
+			}
 
 			if (hasLumberjack && state.is(BlockTags.LOGS)) {
 				handleLumberjack(serverLevel, serverPlayer, pos, state, blockEntity, tool, hasTelekinesis);
@@ -91,15 +102,29 @@ public class CombinedEnchantmentHandler {
 		return false;
 	}
 
+	private static ItemStack trySmelt(ServerLevel level, ItemStack stack) {
+		try {
+			var input = new SingleRecipeInput(stack);
+			Optional<net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmeltingRecipe>> opt = level.getRecipeManager().getRecipeFor(RecipeType.SMELTING, input, level);
+			if (opt.isPresent()) {
+				ItemStack result = opt.get().value().assemble(input, level.registryAccess());
+				result.setCount(stack.getCount());
+				return result;
+			}
+		} catch (Exception ignored) {}
+		return stack;
+	}
+
 	private static void handleLumberjack(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Set<BlockPos> logs = collectConnectedLogs(level, origin);
 		boolean creative = player.getAbilities().instabuild;
+		boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
 		for (BlockPos p : logs) {
 			if (p.equals(origin)) continue;
 			BlockState s = level.getBlockState(p);
 			if (isUnbreakable(level, p, s)) continue;
-			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, creative);
+			breakAdditionalBlock(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, hasSmelt, creative);
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
@@ -107,6 +132,7 @@ public class CombinedEnchantmentHandler {
 	private static void handleExcavationC1(ServerLevel level, ServerPlayer player, BlockPos origin, BlockState originState, BlockEntity originBe, ItemStack tool, boolean hasTelekinesis) {
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 2.5);
 		Direction dir = getHitDirection(player);
+		boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
 		for (int a = -1; a <= 1; a++) {
 			for (int b = -1; b <= 1; b++) {
 				if (a == 0 && b == 0) continue;
@@ -120,31 +146,49 @@ public class CombinedEnchantmentHandler {
 				}
 				BlockState s = level.getBlockState(p);
 				if (isUnbreakable(level, p, s)) continue;
-				breakAdditionalBlockNoDurability(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis);
+				breakAdditionalBlockNoDurability(level, player, p, s, level.getBlockEntity(p), tool, hasTelekinesis, hasSmelt);
 			}
 		}
 		if (hasTelekinesis) pickupItemEntitiesAt(level, player, origin, 3.0);
 	}
 
-	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
+	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean hasSmelt, boolean creative) {
 		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
-		if (hasTelekinesis) {
-			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
-		} else {
-			for (ItemStack drop : drops) if (!drop.isEmpty()) Block.popResource(level, pos, drop);
+		for (ItemStack drop : drops) {
+			if (drop.isEmpty()) continue;
+			ItemStack out = hasSmelt ? trySmelt(level, drop) : drop;
+			if (hasTelekinesis) {
+				if (!player.getInventory().add(out)) Block.popResource(level, pos, out);
+			} else {
+				Block.popResource(level, pos, out);
+			}
 		}
 		level.removeBlock(pos, false);
 		if (!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
 	}
 
-	private static void breakAdditionalBlockNoDurability(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis) {
+	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
+		boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
+		breakAdditionalBlock(level, player, pos, state, be, tool, hasTelekinesis, hasSmelt, creative);
+	}
+
+	private static void breakAdditionalBlockNoDurability(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean hasSmelt) {
 		List<ItemStack> drops = Block.getDrops(state, level, pos, be, player, tool);
-		if (hasTelekinesis) {
-			for (ItemStack drop : drops) if (!drop.isEmpty()) if (!player.getInventory().add(drop)) Block.popResource(level, pos, drop);
-		} else {
-			for (ItemStack drop : drops) if (!drop.isEmpty()) Block.popResource(level, pos, drop);
+		for (ItemStack drop : drops) {
+			if (drop.isEmpty()) continue;
+			ItemStack out = hasSmelt ? trySmelt(level, drop) : drop;
+			if (hasTelekinesis) {
+				if (!player.getInventory().add(out)) Block.popResource(level, pos, out);
+			} else {
+				Block.popResource(level, pos, out);
+			}
 		}
 		level.removeBlock(pos, false);
+	}
+
+	private static void breakAdditionalBlockNoDurability(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis) {
+		boolean hasSmelt = getEnchantmentLevel(tool, AUTO_SMELTING_KEY) > 0;
+		breakAdditionalBlockNoDurability(level, player, pos, state, be, tool, hasTelekinesis, hasSmelt);
 	}
 
 	private static void pickupItemEntitiesAt(ServerLevel level, ServerPlayer player, BlockPos pos, double radius) {
