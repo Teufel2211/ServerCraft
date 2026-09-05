@@ -39,18 +39,21 @@ public class TelekinesisMixin {
 
 		ResourceKey<Enchantment> teleKey = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.TELEKINESIS_ID);
 		ResourceKey<Enchantment> smeltKey = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.AUTO_SMELTING_ID);
+		ResourceKey<Enchantment> excavationKey = ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.EXCAVATION_ID);
 		boolean hasTele = false;
 		boolean hasSmelt = false;
+		boolean hasExcavation = false;
 		for (Holder<Enchantment> h : checkStack.getEnchantments().keySet()) {
 			if (h.is(teleKey)) hasTele = true;
 			if (h.is(smeltKey)) hasSmelt = true;
+			if (h.is(excavationKey)) hasExcavation = true;
 		}
-		if (!hasTele && !hasSmelt) return;
+		if (!hasTele && !(hasSmelt && hasExcavation)) return;
 
 		List<ItemStack> drops = Block.getDrops(state, serverLevel, pos, blockEntity, player, checkStack);
 		for (ItemStack drop : drops) {
 			if (drop.isEmpty()) continue;
-			ItemStack out = hasSmelt ? trySmelt(serverLevel, drop) : drop;
+			ItemStack out = (hasSmelt && hasExcavation) ? trySmelt(serverLevel, drop) : drop;
 			if (hasTele) {
 				if (!player.getInventory().add(out)) {
 					Block.popResource(level, pos, out);
