@@ -1,0 +1,22 @@
+{
+	"anvil_cost": 4,
+	"description": {
+		"text": "Auto Smelting",
+		"color": "green"
+	},
+	"effects": {},
+	"max_cost": {
+		"base": 30,
+		"per_level_above_first": 10
+	},
+	"max_level": 1,
+	"min_cost": {
+		"base": 15,
+		"per_level_above_first": 9
+	},
+	"slots": [
+		"mainhand"
+	],
+	"supported_items": "#custom-server-mod:enchantable/pickaxes",
+	"weight": 5
+}
