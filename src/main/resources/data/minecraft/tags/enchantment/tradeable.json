@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "custom-server-mod:lumberjack",
-    "custom-server-mod:telekinesis"
+    "custom-server-mod:telekinesis",
+    "custom-server-mod:auto_smelting"
   ]
 }
