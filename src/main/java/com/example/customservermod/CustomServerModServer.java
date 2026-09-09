@@ -1,6 +1,7 @@
 package com.example.customservermod;
 
 import com.example.customservermod.combined.CombinedEnchantmentHandler;
+import com.example.customservermod.msgspy.MsgSpyCommand;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 	@Override
 	public void onInitializeServer() {
 		CombinedEnchantmentHandler.register();
-		LOGGER.info("[Custom Server Mod] Server initialized: Lumberjack + Telekinesis + Excavation enchantments + custom Mace recipe");
+		MsgSpyCommand.register();
+		LOGGER.info("[Custom Server Mod] Server initialized: Lumberjack + Telekinesis + Excavation + Auto Smelting enchantments + custom Mace recipe + MsgSpy");
 	}
 }
