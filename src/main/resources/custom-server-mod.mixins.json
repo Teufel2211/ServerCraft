@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_25",
   "refmap": "custom-server-mod.refmap.json",
   "mixins": [
-    "TelekinesisMixin"
+    "TelekinesisMixin",
+    "MsgCommandMixin"
   ],
   "client": [],
   "injectors": {
