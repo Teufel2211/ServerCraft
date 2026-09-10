@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.commands.MsgCommand;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,9 +22,8 @@ public class MsgCommandMixin {
 		if (source.getServer() == null) return;
 		String senderName = source.getTextName();
 		String content = message.signedContent();
-		// Build spy message: [Spy] sender -> target: content
 		for (ServerPlayer spy : source.getServer().getPlayerList().getPlayers()) {
-			if (!spy.hasPermissions(4)) continue;
+			if (!spy.permissions().hasPermission(Permissions.COMMANDS_OWNER)) continue;
 			if (!MsgSpyManager.isSpyEnabled(spy)) continue;
 			if (spy.getName().getString().equals(senderName)) continue;
 			boolean isTarget = false;
