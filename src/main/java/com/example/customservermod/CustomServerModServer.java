@@ -3,6 +3,7 @@ package com.example.customservermod;
 import com.example.customservermod.combined.CombinedEnchantmentHandler;
 import com.example.customservermod.debug.DebugCommand;
 import com.example.customservermod.msgspy.MsgSpyCommand;
+import com.example.customservermod.treefeller.TreeFeller;
 import com.example.customservermod.version.VersionChecker;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import org.slf4j.Logger;
@@ -14,6 +15,8 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 
 	@Override
 	public void onInitializeServer() {
+		// Dual-Register: falls main schon lief (environment:* auf DedicatedServer laufen beide), guard in Handlern verhindert Doppel-Listener
+		TreeFeller.register();
 		CombinedEnchantmentHandler.register();
 		MsgSpyCommand.register();
 		DebugCommand.register();

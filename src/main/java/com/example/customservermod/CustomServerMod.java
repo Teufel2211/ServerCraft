@@ -1,6 +1,7 @@
 package com.example.customservermod;
 
 import com.example.customservermod.block.PizzaOvenBlock;
+import com.example.customservermod.combined.CombinedEnchantmentHandler;
 import com.example.customservermod.item.PizzaItem;
 import com.example.customservermod.treefeller.TreeFeller;
 import net.fabricmc.api.ModInitializer;
@@ -42,7 +43,9 @@ public class CustomServerMod implements ModInitializer {
 		Block pizzaOvenBlock = Registry.register(BuiltInRegistries.BLOCK, PIZZA_OVEN_ID, new PizzaOvenBlock(BlockBehaviour.Properties.of().setId(ResourceKey.create(Registries.BLOCK, PIZZA_OVEN_ID)).strength(2.0F, 6.0F).requiresCorrectToolForDrops()));
 		Registry.register(BuiltInRegistries.ITEM, PIZZA_OVEN_ID, new BlockItem(pizzaOvenBlock, new Item.Properties().setId(ResourceKey.create(Registries.ITEM, PIZZA_OVEN_ID))));
 
+		// Beide Handler in main registrieren (laufen auf Client+Server), Server ruft sie zusätzlich nochmal - dort guard gegen Doppel-Registrierung
 		TreeFeller.register();
+		CombinedEnchantmentHandler.register();
 		LOGGER.info("[ServerCraft] Initialized: Lumberjack + Telekinesis + Excavation + Auto Smelting enchantments + custom Mace recipe + Pizza + Oven");
 	}
 }
