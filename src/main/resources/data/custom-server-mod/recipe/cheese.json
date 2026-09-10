@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "food",
+  "ingredients": [
+    {
+      "item": "minecraft:milk_bucket"
+    }
+  ],
+  "result": {
+    "id": "custom-server-mod:cheese",
+    "count": 3
+  }
+}

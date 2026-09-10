@@ -1,0 +1,7 @@
+﻿{
+  "variants": {
+    "": {
+      "model": "custom-server-mod:block/pizza_oven"
+    }
+  }
+}

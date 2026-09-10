@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "food",
+  "ingredients": [
+    {
+      "item": "custom-server-mod:pizza_dough"
+    },
+    {
+      "item": "custom-server-mod:tomato"
+    },
+    {
+      "item": "custom-server-mod:cheese"
+    }
+  ],
+  "result": {
+    "id": "custom-server-mod:pizza",
+    "count": 1
+  }
+}
