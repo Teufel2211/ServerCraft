@@ -5,5 +5,6 @@
     "block.custom-server-mod.pizza":  "Pizza",
     "item.custom-server-mod.tomato":  "Tomato",
     "item.custom-server-mod.cheese":  "Cheese",
-    "item.custom-server-mod.pizza_dough":  "Pizza Dough"
+    "item.custom-server-mod.pizza_dough":  "Pizza Dough",
+    "block.custom-server-mod.pizza_oven":  "Pizza Oven"
 }
