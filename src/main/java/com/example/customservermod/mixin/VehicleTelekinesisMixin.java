@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(VehicleEntity.class)
-public class VehicleTelekinesisMixin {
+public abstract class VehicleTelekinesisMixin {
 
 	@Shadow
 	protected abstract Item getDropItem();
