@@ -14,6 +14,7 @@ public class CustomServerMod implements ModInitializer {
 	public static final Identifier TELEKINESIS_ID = Identifier.fromNamespaceAndPath(MOD_ID, "telekinesis");
 	public static final Identifier EXCAVATION_ID = Identifier.fromNamespaceAndPath(MOD_ID, "excavation");
 	public static final Identifier AUTO_SMELTING_ID = Identifier.fromNamespaceAndPath(MOD_ID, "auto_smelting");
+	public static final Identifier INFINITE_TOTEM_ID = Identifier.fromNamespaceAndPath(MOD_ID, "infinite_totem");
 
 	@Override
 	public void onInitialize() {
