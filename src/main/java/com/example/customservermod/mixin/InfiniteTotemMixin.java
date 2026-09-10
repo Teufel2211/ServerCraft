@@ -1,13 +1,13 @@
 package com.example.customservermod.mixin;
 
-import com.example.customservermod.CustomServerMod;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -40,16 +40,24 @@ public class InfiniteTotemMixin {
 
 	private ItemStack findInfiniteTotem(ServerPlayer player) {
 		ItemStack mainHand = player.getMainHandItem();
+		if (isInfiniteTotem(mainHand)) return mainHand;
 		ItemStack offHand = player.getOffhandItem();
-		var infiniteItem = BuiltInRegistries.ITEM.getValue(CustomServerMod.INFINITE_TOTEM_ID);
-
-		if (!mainHand.isEmpty() && mainHand.is(infiniteItem)) return mainHand;
-		if (!offHand.isEmpty() && offHand.is(infiniteItem)) return offHand;
-
+		if (isInfiniteTotem(offHand)) return offHand;
 		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
 			ItemStack stack = player.getInventory().getItem(i);
-			if (!stack.isEmpty() && stack.is(infiniteItem)) return stack;
+			if (isInfiniteTotem(stack)) return stack;
 		}
 		return ItemStack.EMPTY;
+	}
+
+	private boolean isInfiniteTotem(ItemStack stack) {
+		if (stack.isEmpty() || !stack.is(Items.TOTEM_OF_UNDYING)) return false;
+		var customData = stack.get(DataComponents.CUSTOM_DATA);
+		if (customData == null) return false;
+		try {
+			return customData.copyTag().getBooleanOr("InfiniteTotem", false);
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }
