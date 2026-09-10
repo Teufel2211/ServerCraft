@@ -1,4 +1,4 @@
-﻿package com.example.customservermod.version;
+package com.example.customservermod.version;
 
 import com.example.customservermod.CustomServerMod;
 import io.netty.buffer.Unpooled;
