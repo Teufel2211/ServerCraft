@@ -1,4 +1,4 @@
-package com.example.customservermod.debug;
+﻿package com.example.customservermod.debug;
 
 import com.example.customservermod.CustomServerMod;
 import com.mojang.brigadier.CommandDispatcher;
@@ -25,20 +25,20 @@ public class DebugCommand {
 							var server = ctx.getSource().getServer();
 							String modVersion = FabricLoader.getInstance().getModContainer(CustomServerMod.MOD_ID)
 									.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
-							ctx.getSource().sendSuccess(() -> Component.literal("§6[ServerCraft Debug] §7Version: §a" + modVersion), false);
-							ctx.getSource().sendSuccess(() -> Component.literal("§7Registry custom-server-mod:"), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§6[ServerCraft Debug] Â§7Version: Â§a" + modVersion), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Registry custom-server-mod:"), false);
 							int count = 0;
 							for (var entry : BuiltInRegistries.ITEM) {
 								var key = BuiltInRegistries.ITEM.getKey(entry);
 								if (key != null && key.getNamespace().equals(CustomServerMod.MOD_ID)) {
-									ctx.getSource().sendSuccess(() -> Component.literal(" §7- item: §f" + key), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(" Â§7- item: Â§f" + key), false);
 									count++;
 								}
 							}
 							for (var entry : BuiltInRegistries.BLOCK) {
 								var key = BuiltInRegistries.BLOCK.getKey(entry);
 								if (key != null && key.getNamespace().equals(CustomServerMod.MOD_ID)) {
-									ctx.getSource().sendSuccess(() -> Component.literal(" §7- block: §f" + key), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(" Â§7- block: Â§f" + key), false);
 									count++;
 								}
 							}
@@ -48,15 +48,15 @@ public class DebugCommand {
 									// Already counted
 								}
 							}
-							ctx.getSource().sendSuccess(() -> Component.literal("§7Total custom-server-mod entries: §a" + count), false);
-							ctx.getSource().sendSuccess(() -> Component.literal("§7Server: §f" + server.getServerVersion() + " §7Mods: §f" + FabricLoader.getInstance().getAllMods().size()), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Total custom-server-mod entries: Â§a" + count), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Server: Â§f" + server.getServerVersion() + " Â§7Mods: Â§f" + FabricLoader.getInstance().getAllMods().size()), false);
 							return 1;
 						}))
 				.then(Commands.literal("version")
 						.executes(ctx -> {
 							String v = FabricLoader.getInstance().getModContainer(CustomServerMod.MOD_ID)
 									.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
-							ctx.getSource().sendSuccess(() -> Component.literal("§6[ServerCraft] Version: §a" + v), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§6[ServerCraft] Version: Â§a" + v), false);
 							return 1;
 						}))
 		);
