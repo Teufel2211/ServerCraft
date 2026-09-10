@@ -1,13 +1,11 @@
 package com.example.customservermod.item;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemLore;
-
-import java.util.List;
+import net.minecraft.world.item.component.TooltipDisplay;
+import java.util.function.Consumer;
 
 public class InfiniteTotemItem extends Item {
 	public InfiniteTotemItem(Properties properties) {
@@ -15,10 +13,10 @@ public class InfiniteTotemItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-		tooltipComponents.add(Component.literal("§6Unendlich §7- 30 Sekunden Cooldown"));
-		tooltipComponents.add(Component.literal("§7Verbraucht sich nicht, schützt vor Tod"));
-		super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
+	public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltip, TooltipFlag flag) {
+		tooltip.accept(Component.literal("§6Unendlich §7- 30 Sekunden Cooldown"));
+		tooltip.accept(Component.literal("§7Verbraucht sich nicht, schützt vor Tod"));
+		super.appendHoverText(stack, context, display, tooltip, flag);
 	}
 
 	@Override
