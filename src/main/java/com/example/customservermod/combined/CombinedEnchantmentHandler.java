@@ -44,7 +44,11 @@ public class CombinedEnchantmentHandler {
 	private static final ResourceKey<Enchantment> AUTO_SMELTING_KEY =
 			ResourceKey.create(Registries.ENCHANTMENT, CustomServerMod.AUTO_SMELTING_ID);
 
+	private static boolean registered = false;
+
 	public static void register() {
+		if (registered) return;
+		registered = true;
 		PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
 			if (level.isClientSide() || player == null || player.isShiftKeyDown()) return;
 			if (!(level instanceof ServerLevel serverLevel) || !(player instanceof ServerPlayer serverPlayer)) return;
