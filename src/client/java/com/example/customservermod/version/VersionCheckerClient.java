@@ -1,4 +1,4 @@
-package com.example.customservermod.version;
+﻿package com.example.customservermod.version;
 
 import com.example.customservermod.CustomServerMod;
 import net.fabricmc.api.ClientModInitializer;
@@ -15,7 +15,7 @@ public class VersionCheckerClient implements ClientModInitializer {
 			String serverVersion = buf.readUtf();
 			FriendlyByteBuf resp = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
 			resp.writeUtf(clientVersion);
-			return resp;
+			return java.util.concurrent.CompletableFuture.completedFuture\(resp\);
 		});
 	}
 }
