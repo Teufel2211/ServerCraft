@@ -24,10 +24,8 @@ public class InfiniteTotemMixin {
 		ItemStack infiniteTotem = findInfiniteTotem(player);
 		if (infiniteTotem.isEmpty()) return;
 
-		// Check cooldown (30 seconds = 600 ticks)
-		if (player.getCooldowns().isOnCooldown(infiniteTotem.getItem())) return;
+		if (player.getCooldowns().isOnCooldown(infiniteTotem)) return;
 
-		// Apply totem effects (like vanilla)
 		player.setHealth(1.0F);
 		player.removeAllEffects();
 		player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
@@ -35,8 +33,7 @@ public class InfiniteTotemMixin {
 		player.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800, 0));
 		player.level().broadcastEntityEvent(player, (byte)35);
 
-		// Set cooldown 30 seconds, don't consume item
-		player.getCooldowns().addCooldown(infiniteTotem.getItem(), 600);
+		player.getCooldowns().addCooldown(infiniteTotem, 600);
 
 		cir.setReturnValue(true);
 	}
@@ -49,8 +46,8 @@ public class InfiniteTotemMixin {
 		if (!mainHand.isEmpty() && mainHand.is(infiniteItem)) return mainHand;
 		if (!offHand.isEmpty() && offHand.is(infiniteItem)) return offHand;
 
-		// Also check inventory for convenience
-		for (ItemStack stack : player.getInventory().items) {
+		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			ItemStack stack = player.getInventory().getItem(i);
 			if (!stack.isEmpty() && stack.is(infiniteItem)) return stack;
 		}
 		return ItemStack.EMPTY;
