@@ -1,4 +1,4 @@
-package com.example.customservermod.debug;
+﻿package com.example.customservermod.debug;
 
 import com.example.customservermod.CustomServerMod;
 import com.mojang.brigadier.CommandDispatcher;
@@ -25,34 +25,40 @@ public class DebugCommand {
 							var server = ctx.getSource().getServer();
 							String modVersion = FabricLoader.getInstance().getModContainer(CustomServerMod.MOD_ID)
 									.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A76[ServerCraft Debug] \u00A77Version: \u00A7a" + modVersion), false);
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Registry custom-server-mod:"), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§6[ServerCraft Debug] Â§7Version: Â§a" + modVersion), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Registry custom-server-mod:"), false);
 							int count = 0;
 							for (var entry : BuiltInRegistries.ITEM) {
 								var key = BuiltInRegistries.ITEM.getKey(entry);
 								if (key != null && key.getNamespace().equals(CustomServerMod.MOD_ID)) {
-									ctx.getSource().sendSuccess(() -> Component.literal(" \u00A77- item: \u00A7f" + key), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(" Â§7- item: Â§f" + key), false);
 									count++;
 								}
 							}
 							for (var entry : BuiltInRegistries.BLOCK) {
 								var key = BuiltInRegistries.BLOCK.getKey(entry);
 								if (key != null && key.getNamespace().equals(CustomServerMod.MOD_ID)) {
-									ctx.getSource().sendSuccess(() -> Component.literal(" \u00A77- block: \u00A7f" + key), false);
+									ctx.getSource().sendSuccess(() -> Component.literal(" Â§7- block: Â§f" + key), false);
 									count++;
 								}
 							}
-							int finalCount = count;
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Total custom-server-mod entries: \u00A7a" + finalCount), false);
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Server: \u00A7f" + server.getServerVersion() + " \u00A77Mods: \u00A7f" + FabricLoader.getInstance().getAllMods().size()), false);
+							for (var entry : BuiltInRegistries.ITEM) {
+								var key = BuiltInRegistries.ITEM.getKey(entry);
+								if (key != null && key.getNamespace().equals(CustomServerMod.MOD_ID)) {
+									// Already counted
+								}
+							}
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Total custom-server-mod entries: Â§a" + count), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§7Server: Â§f" + server.getServerVersion() + " Â§7Mods: Â§f" + FabricLoader.getInstance().getAllMods().size()), false);
 							return 1;
 						}))
 				.then(Commands.literal("version")
 						.executes(ctx -> {
 							String v = FabricLoader.getInstance().getModContainer(CustomServerMod.MOD_ID)
 									.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A76[ServerCraft] Version: \u00A7a" + v), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("Â§6[ServerCraft] Version: Â§a" + v), false);
 							return 1;
-						}));
+						}))
+		);
 	}
 }
