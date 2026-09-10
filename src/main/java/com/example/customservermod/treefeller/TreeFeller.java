@@ -102,7 +102,6 @@ public class TreeFeller {
 					result.add(neighbor);
 					queue.add(neighbor);
 				}
-				}
 			}
 		}
 		return result;
