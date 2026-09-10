@@ -19,6 +19,7 @@ public class CustomServerMod implements ModInitializer {
 	public static final Identifier TOMATO_ID = Identifier.fromNamespaceAndPath(MOD_ID, "tomato");
 	public static final Identifier CHEESE_ID = Identifier.fromNamespaceAndPath(MOD_ID, "cheese");
 	public static final Identifier PIZZA_DOUGH_ID = Identifier.fromNamespaceAndPath(MOD_ID, "pizza_dough");
+	public static final Identifier PIZZA_OVEN_ID = Identifier.fromNamespaceAndPath(MOD_ID, "pizza_oven");
 
 	@Override
 	public void onInitialize() {
