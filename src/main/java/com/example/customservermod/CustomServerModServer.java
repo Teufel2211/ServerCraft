@@ -1,4 +1,4 @@
-﻿package com.example.customservermod;
+package com.example.customservermod;
 
 import com.example.customservermod.block.PizzaOvenBlock;
 import com.example.customservermod.combined.CombinedEnchantmentHandler;
