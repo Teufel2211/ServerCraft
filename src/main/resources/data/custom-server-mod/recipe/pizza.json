@@ -1,16 +1,17 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "food",
-  "pattern": [
-    "WWW",
-    "CEC",
-    "WWW"
+  "ingredients": [
+    {
+      "item": "custom-server-mod:pizza_dough"
+    },
+    {
+      "item": "custom-server-mod:tomato"
+    },
+    {
+      "item": "custom-server-mod:cheese"
+    }
   ],
-  "key": {
-    "W": "minecraft:wheat",
-    "C": "minecraft:milk_bucket",
-    "E": "minecraft:egg"
-  },
   "result": {
     "id": "custom-server-mod:pizza",
     "count": 1
