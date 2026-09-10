@@ -24,6 +24,6 @@ public class CustomServerMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		TreeFeller.register();
-		LOGGER.info("[Custom Server Mod] Initialized: Lumberjack + Telekinesis + Excavation + Auto Smelting enchantments + custom Mace recipe");
+		LOGGER.info("[ServerCraft] Initialized: Lumberjack + Telekinesis + Excavation + Auto Smelting enchantments + custom Mace recipe");
 	}
 }
