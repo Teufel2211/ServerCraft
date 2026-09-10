@@ -20,8 +20,11 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 	@Override
 	public void onInitializeServer() {
 		Registry.register(BuiltInRegistries.ITEM, CustomServerMod.PIZZA_ID, new PizzaItem(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, CustomServerMod.PIZZA_ID)).food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.8F).build()).stacksTo(16)));
+		Registry.register(BuiltInRegistries.ITEM, CustomServerMod.TOMATO_ID, new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, CustomServerMod.TOMATO_ID)).food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.3F).build())));
+		Registry.register(BuiltInRegistries.ITEM, CustomServerMod.CHEESE_ID, new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, CustomServerMod.CHEESE_ID)).food(new FoodProperties.Builder().nutrition(3).saturationModifier(0.4F).build())));
+		Registry.register(BuiltInRegistries.ITEM, CustomServerMod.PIZZA_DOUGH_ID, new Item(new Item.Properties().setId(ResourceKey.create(Registries.ITEM, CustomServerMod.PIZZA_DOUGH_ID))));
 		CombinedEnchantmentHandler.register();
 		MsgSpyCommand.register();
-		LOGGER.info("[Custom Server Mod] Server initialized: Teufel's Essentials - Lumberjack + Telekinesis + Excavation + Auto Smelting + Infinite Totem (vanilla NBT) + Pizza + MsgSpy");
+		LOGGER.info("[Custom Server Mod] Server initialized: Teufel's Essentials - Lumberjack + Telekinesis + Excavation + Auto Smelting + Infinite Totem (vanilla NBT) + Pizza + Tomato + Cheese + Dough + MsgSpy");
 	}
 }
