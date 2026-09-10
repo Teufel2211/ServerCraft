@@ -16,6 +16,9 @@ public class CustomServerMod implements ModInitializer {
 	public static final Identifier AUTO_SMELTING_ID = Identifier.fromNamespaceAndPath(MOD_ID, "auto_smelting");
 	public static final Identifier INFINITE_TOTEM_ID = Identifier.fromNamespaceAndPath(MOD_ID, "infinite_totem");
 	public static final Identifier PIZZA_ID = Identifier.fromNamespaceAndPath(MOD_ID, "pizza");
+	public static final Identifier TOMATO_ID = Identifier.fromNamespaceAndPath(MOD_ID, "tomato");
+	public static final Identifier CHEESE_ID = Identifier.fromNamespaceAndPath(MOD_ID, "cheese");
+	public static final Identifier PIZZA_DOUGH_ID = Identifier.fromNamespaceAndPath(MOD_ID, "pizza_dough");
 
 	@Override
 	public void onInitialize() {
