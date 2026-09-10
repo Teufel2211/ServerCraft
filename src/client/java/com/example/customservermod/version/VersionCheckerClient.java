@@ -15,7 +15,8 @@ public class VersionCheckerClient implements ClientModInitializer {
 			String serverVersion = buf.readUtf();
 			FriendlyByteBuf resp = new FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
 			resp.writeUtf(clientVersion);
-			return java.util.concurrent.CompletableFuture.completedFuture\(resp\);
+			return java.util.concurrent.CompletableFuture.completedFuture(resp);
 		});
 	}
 }
+
