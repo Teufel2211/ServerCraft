@@ -45,7 +45,7 @@ public class DebugCommand {
 							}
 							var enchantReg = ctx.getSource().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
 							for (var holder : enchantReg.listElements().toList()) {
-								var key = holder.key().location();
+								var key = holder.key().identifier();
 								if (key.getNamespace().equals(CustomServerMod.MOD_ID)) {
 									ctx.getSource().sendSuccess(() -> Component.literal(" \u00A77- enchantment: \u00A7f" + key), false);
 									count++;
