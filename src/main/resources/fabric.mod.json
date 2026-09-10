@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "custom-server-mod",
 	"version": "${version}",
-	"name": "Teufel's Essentials",
+	"name": "ServerCraft",
 	"description": "Server-side only (no client mod needed) — Infinite Totem (30s cooldown, 8 Netherite Blocks + Totem), Lumberjack, Telekinesis, Excavation 3x3, Auto Smelting, MsgSpy. For Minecraft 26.2 Chaos Cubed.",
 	"authors": [
 		"Teufel2211"
