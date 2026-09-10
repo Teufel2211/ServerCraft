@@ -6,6 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permissions;
 
 public class MsgSpyCommand {
 	public static void register() {
@@ -16,7 +17,7 @@ public class MsgSpyCommand {
 
 	private static void registerCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(Commands.literal("msgspy")
-				.requires(src -> src.hasPermission(4))
+				.requires(src -> src.permissions().hasPermission(Permissions.COMMANDS_OWNER))
 				.executes(ctx -> {
 					ServerPlayer player = ctx.getSource().getPlayer();
 					if (player == null) {
@@ -32,7 +33,7 @@ public class MsgSpyCommand {
 					return 1;
 				}));
 		dispatcher.register(Commands.literal("socialspy")
-				.requires(src -> src.hasPermission(4))
+				.requires(src -> src.permissions().hasPermission(Permissions.COMMANDS_OWNER))
 				.executes(ctx -> {
 					ServerPlayer player = ctx.getSource().getPlayer();
 					if (player == null) {
