@@ -1,9 +1,10 @@
-package com.example.customservermod;
+﻿package com.example.customservermod;
 
 import com.example.customservermod.block.PizzaOvenBlock;
 import com.example.customservermod.combined.CombinedEnchantmentHandler;
 import com.example.customservermod.item.PizzaItem;
 import com.example.customservermod.msgspy.MsgSpyCommand;
+import com.example.customservermod.version.VersionChecker;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -31,6 +32,7 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 		Registry.register(BuiltInRegistries.ITEM, CustomServerMod.PIZZA_OVEN_ID, new BlockItem(pizzaOvenBlock, new Item.Properties().setId(ResourceKey.create(Registries.ITEM, CustomServerMod.PIZZA_OVEN_ID))));
 		CombinedEnchantmentHandler.register();
 		MsgSpyCommand.register();
+		VersionChecker.init();
 		LOGGER.info("[ServerCraft] Server initialized: Lumberjack + Telekinesis + Excavation + Auto Smelting + Infinite Totem (vanilla NBT) + Pizza + Tomato + Cheese + Dough + Pizza Oven + MsgSpy + AutoUpdater");
 	}
 }
