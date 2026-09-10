@@ -1,7 +1,7 @@
-package com.example.customservermod.version;
+﻿package com.example.customservermod.version;
 
 import com.example.customservermod.CustomServerMod;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -22,19 +22,19 @@ public class VersionChecker {
 		serverVersion = FabricLoader.getInstance().getModContainer(CustomServerMod.MOD_ID)
 				.map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("unknown");
 		ServerLoginConnectionEvents.QUERY_START.register((handler, server, sender, synchronizer) -> {
-			FriendlyByteBuf buf = PacketByteBufs.create();
+			FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 			buf.writeUtf(serverVersion);
 			sender.sendPacket(VERSION_CHECK_ID, buf);
 		});
 		ServerLoginNetworking.registerGlobalReceiver(VERSION_CHECK_ID, (server, handler, understood, buf, synchronizer, responseSender) -> {
 			if (!understood) {
-				handler.disconnect(Component.literal("§c[ServerCraft] Client braucht ServerCraft Mod!\n§7Lade gleiche Version wie Server (" + serverVersion + ") von\n§bhttps://github.com/Teufel2211/ServerCraft/releases"));
+				handler.disconnect(Component.literal("Â§c[ServerCraft] Client braucht ServerCraft Mod!\nÂ§7Lade gleiche Version wie Server (" + serverVersion + ") von\nÂ§bhttps://github.com/Teufel2211/ServerCraft/releases"));
 				return;
 			}
 			String clientVersion = buf.readUtf();
 			if (!clientVersion.equals(serverVersion)) {
 				LOGGER.warn("[ServerCraft] Version mismatch: Server {} vs Client {} ({})", serverVersion, clientVersion, handler.getUserName());
-				handler.disconnect(Component.literal("§c[ServerCraft] Version Mismatch!\n§7Server: §a" + serverVersion + " §7Client: §c" + clientVersion + "\n§7Bitte gleiche Version von\n§bhttps://github.com/Teufel2211/ServerCraft/releases\n§7auf beiden Seiten nutzen!"));
+				handler.disconnect(Component.literal("Â§c[ServerCraft] Version Mismatch!\nÂ§7Server: Â§a" + serverVersion + " Â§7Client: Â§c" + clientVersion + "\nÂ§7Bitte gleiche Version von\nÂ§bhttps://github.com/Teufel2211/ServerCraft/releases\nÂ§7auf beiden Seiten nutzen!"));
 			}
 		});
 		LOGGER.info("[ServerCraft] VersionCheck registered (server version {})", serverVersion);
@@ -44,3 +44,4 @@ public class VersionChecker {
 		return serverVersion;
 	}
 }
+
