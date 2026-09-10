@@ -3,13 +3,13 @@
 	"id": "custom-server-mod",
 	"version": "${version}",
 	"name": "ServerCraft",
-	"description": "Server-side only (no client mod needed) — Infinite Totem (30s cooldown, 8 Netherite Blocks + Totem), Lumberjack, Telekinesis, Excavation 3x3, Auto Smelting, MsgSpy. For Minecraft 26.2 Chaos Cubed.",
+	"description": "Requires Fabric on both client and server — Infinite Totem (30s cooldown, 8 Netherite Blocks + Totem), Lumberjack, Telekinesis, Excavation 3x3, Auto Smelting, MsgSpy. For Minecraft 26.2 Chaos Cubed.",
 	"authors": [
 		"Teufel2211"
 	],
 	"contact": {},
 	"license": "MIT",
-	"environment": "server",
+	"environment": "*",
 	"entrypoints": {
 		"server": [
 			"com.example.customservermod.CustomServerModServer"
