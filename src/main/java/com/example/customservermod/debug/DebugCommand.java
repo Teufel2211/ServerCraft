@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.permissions.Permissions;
 
@@ -42,9 +43,18 @@ public class DebugCommand {
 									count++;
 								}
 							}
+							var enchantReg = ctx.getSource().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+							for (var holder : enchantReg.listElements().toList()) {
+								var key = holder.key().location();
+								if (key.getNamespace().equals(CustomServerMod.MOD_ID)) {
+									ctx.getSource().sendSuccess(() -> Component.literal(" \u00A77- enchantment: \u00A7f" + key), false);
+									count++;
+								}
+							}
 							int finalCount = count;
-							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Total custom-server-mod entries: \u00A7a" + finalCount), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Total custom-server-mod entries: \u00A7a" + finalCount + " \u00A77(expected 10: 5 items + 1 block + 4 enchants)"), false);
 							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Server: \u00A7f" + server.getServerVersion() + " \u00A77Mods: \u00A7f" + FabricLoader.getInstance().getAllMods().size()), false);
+							ctx.getSource().sendSuccess(() -> Component.literal("\u00A77Fabric Loader: \u00A7f" + FabricLoader.getInstance().getModContainer("fabricloader").map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?")), false);
 							return 1;
 						}))
 				.then(Commands.literal("version")
