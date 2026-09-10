@@ -1,4 +1,4 @@
-package com.example.customservermod.debug;
+﻿package com.example.customservermod.debug;
 
 import com.example.customservermod.CustomServerMod;
 import com.mojang.brigadier.CommandDispatcher;
