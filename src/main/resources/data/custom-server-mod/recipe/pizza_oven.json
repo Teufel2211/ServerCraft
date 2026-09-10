@@ -1,0 +1,17 @@
+﻿{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BBB",
+    "BFB",
+    "BBB"
+  ],
+  "key": {
+    "B": "minecraft:bricks",
+    "F": "minecraft:furnace"
+  },
+  "result": {
+    "id": "custom-server-mod:pizza_oven",
+    "count": 1
+  }
+}
