@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "custom-server-mod:pizza_dough"
-    },
-    {
-      "item": "custom-server-mod:tomato"
-    },
-    {
-      "item": "custom-server-mod:cheese"
-    }
+    "custom-server-mod:pizza_dough",
+    "custom-server-mod:tomato",
+    "custom-server-mod:cheese"
   ],
   "result": {
     "id": "custom-server-mod:pizza",
