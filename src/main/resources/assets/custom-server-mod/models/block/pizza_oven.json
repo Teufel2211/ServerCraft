@@ -1,37 +1,12 @@
 {
+  "parent": "minecraft:block/cube",
   "textures": {
     "particle": "custom-server-mod:block/front",
-    "front": "custom-server-mod:block/front",
-    "back": "custom-server-mod:block/back",
     "up": "custom-server-mod:block/up",
     "down": "custom-server-mod:block/down",
-    "left": "custom-server-mod:block/left",
-    "right": "custom-server-mod:block/right"
-  },
-  "multipart": [
-    {
-      "when": { "context": "front" },
-      "apply": { "texture": "custom-server-mod:block/front" }
-    },
-    {
-      "when": { "context": "back" },
-      "apply": { "texture": "custom-server-mod:block/back" }
-    },
-    {
-      "when": { "context": "up" },
-      "apply": { "texture": "custom-server-mod:block/up" }
-    },
-    {
-      "when": { "context": "down" },
-      "apply": { "texture": "custom-server-mod:block/down" }
-    },
-    {
-      "when": { "context": "left" },
-      "apply": { "texture": "custom-server-mod:block/left" }
-    },
-    {
-      "when": { "context": "right" },
-      "apply": { "texture": "custom-server-mod:block/right" }
-    }
-  ]
+    "north": "custom-server-mod:block/front",
+    "south": "custom-server-mod:block/back",
+    "west": "custom-server-mod:block/left",
+    "east": "custom-server-mod:block/right"
+  }
 }

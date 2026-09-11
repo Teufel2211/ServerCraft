@@ -1,10 +1,11 @@
 ﻿{
-    "enchantment.custom-server-mod.lumberjack":  "HolzfÃ¤ller",
+    "enchantment.custom-server-mod.lumberjack":  "Holzfäller",
     "enchantment.custom-server-mod.lumberjack.desc":  "Break entire connected tree trunks. Leaves are preserved. Sneak to disable. Works with all wood types.",
     "item.custom-server-mod.pizza":  "Pizza",
     "block.custom-server-mod.pizza":  "Pizza",
     "item.custom-server-mod.tomato":  "Tomato",
     "item.custom-server-mod.cheese":  "Cheese",
     "item.custom-server-mod.pizza_dough":  "Pizza Dough",
-    "block.custom-server-mod.pizza_oven":  "Pizza Oven"
+    "block.custom-server-mod.pizza_oven":  "Pizza Oven",
+    "item.custom-server-mod.pizza_oven":  "Pizza Oven"
 }

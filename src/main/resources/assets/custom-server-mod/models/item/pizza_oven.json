@@ -1,3 +1,6 @@
 ﻿{
-  "parent": "custom-server-mod:block/pizza_oven"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "custom-server-mod:block/front"
+  }
 }
