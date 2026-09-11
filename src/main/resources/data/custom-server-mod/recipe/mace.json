@@ -2,15 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "DBN",
-    "FHf",
-    "DBN"
+    "DND",
+    "FHF",
+    "DBD"
   ],
   "key": {
     "D": "minecraft:diamond_block",
-    "B": "minecraft:nether_star",
-    "F": "minecraft:breeze_rod",
-    "H": "minecraft:heavy_core"
+    "N": "minecraft:nether_star",
+    "F": "minecraft:flow_armor_trim_smithing_template",
+    "H": "minecraft:heavy_core",
+    "B": "minecraft:breeze_rod"
   },
   "result": {
     "id": "minecraft:mace",
