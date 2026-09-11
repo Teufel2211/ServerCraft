@@ -1,12 +1,10 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": [
-    "   ",
-    "   ",
-    "   "
-  ],
-  "key": {},
+  "pattern": ["X"],
+  "key": {
+    "X": "minecraft:barrier"
+  },
   "result": {
     "id": "minecraft:barrier",
     "count": 1
