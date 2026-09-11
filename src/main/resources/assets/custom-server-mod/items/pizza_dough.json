@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "custom-server-mod:item/pizza_dough"
+  }
+}
