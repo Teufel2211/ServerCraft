@@ -166,7 +166,7 @@ public class CombinedEnchantmentHandler {
 				Block.popResource(level, pos, out);
 			}
 		}
-		player.awardStat\(Stats.BLOCK_MINED.get\(state.getBlock\(\)\)\);
+		player.awardStat(Stats.BLOCK_MINED.get(state.getBlock()));
 		level.removeBlock\(pos, false\);
 		if \(!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
 	}
