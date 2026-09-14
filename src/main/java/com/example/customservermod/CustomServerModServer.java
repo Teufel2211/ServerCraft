@@ -6,7 +6,6 @@ import com.example.customservermod.geyser.GeyserCompatibility;
 import com.example.customservermod.msgspy.MsgSpyCommand;
 import com.example.customservermod.treefeller.TreeFeller;
 import com.example.customservermod.updater.AutoUpdater;
-import com.example.customservermod.version.VersionChecker;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -23,7 +22,6 @@ public class CustomServerModServer implements DedicatedServerModInitializer {
 		CombinedEnchantmentHandler.register();
 		MsgSpyCommand.register();
 		DebugCommand.register();
-		VersionChecker.init();
 		GeyserCompatibility.init();
 		ServerLifecycleEvents.SERVER_STARTED.register(AutoUpdater::checkOnStartup);
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> GeyserCompatibility.onBedrockJoin(handler.getPlayer()));
