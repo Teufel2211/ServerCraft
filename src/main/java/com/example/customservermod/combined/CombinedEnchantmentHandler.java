@@ -167,8 +167,8 @@ public class CombinedEnchantmentHandler {
 			}
 		}
 		player.awardStat(Stats.BLOCK_MINED.get(state.getBlock()));
-		level.removeBlock\(pos, false\);
-		if \(!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
+		level.removeBlock(pos, false);
+		if (!creative && !tool.isEmpty()) tool.hurtAndBreak(1, level, player, item->{});
 	}
 
 	private static void breakAdditionalBlock(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, BlockEntity be, ItemStack tool, boolean hasTelekinesis, boolean creative) {
